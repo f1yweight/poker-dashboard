@@ -8,7 +8,7 @@ import com.flyweight.poker_dashboard.user.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class DailyEntryService {
@@ -45,6 +45,17 @@ public class DailyEntryService {
     }
 
     public DailyEntryResponse getByDate(LocalDate entryDate) {
-        return new DailyEntryResponse();
+        DailyEntry dailyEntry = dailyEntryRepository.findByUser_IdAndEntryDate(TEMP_USER_ID, entryDate)
+                .orElseThrow(() -> new RuntimeException("Daily entry not found"));
+        return dailyEntryMapper.toResponse(dailyEntry);
+    }
+
+    public List<DailyEntryResponse> getByDateBetween(LocalDate startDate, LocalDate endDate) {
+        List<DailyEntry> dailyEntries = dailyEntryRepository
+                .findByUser_IdAndEntryDateBetweenOrderByEntryDateAsc(TEMP_USER_ID, startDate, endDate);
+        return dailyEntries
+                .stream()
+                .map(dailyEntryMapper::toResponse)
+                .toList();
     }
 }
