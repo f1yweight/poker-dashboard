@@ -1,7 +1,9 @@
 package com.flyweight.poker_dashboard.user;
 
 import com.flyweight.poker_dashboard.dailyentry.mapper.UserMapper;
+import com.flyweight.poker_dashboard.security.JwtService;
 import com.flyweight.poker_dashboard.user.dto.LoginUserRequest;
+import com.flyweight.poker_dashboard.user.dto.LoginUserResponse;
 import com.flyweight.poker_dashboard.user.dto.RegisterUserRequest;
 import com.flyweight.poker_dashboard.user.dto.UserResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,11 +17,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder
+            , UserMapper userMapper, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
+        this.jwtService = jwtService;
     }
 
     public UserResponse register(RegisterUserRequest request) {
@@ -39,7 +44,7 @@ public class UserService {
         return userMapper.toResponse(savedUser);
     }
 
-    public UserResponse login(LoginUserRequest request) {
+    public LoginUserResponse login(LoginUserRequest request) {
         User user = userRepository
                 .findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
@@ -48,7 +53,8 @@ public class UserService {
             throw new RuntimeException("Invalid email or password");
         }
 
-        return userMapper.toResponse(user);
+        String token = jwtService.generateToken(user);
+        return userMapper.toLoginUserResponse(user, token);
     }
 
     public List<User> findAll() {

@@ -5,34 +5,37 @@ import com.flyweight.poker_dashboard.dailyentry.dto.DailyEntryResponse;
 import com.flyweight.poker_dashboard.dailyentry.mapper.DailyEntryMapper;
 import com.flyweight.poker_dashboard.user.User;
 import com.flyweight.poker_dashboard.user.UserRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class DailyEntryService {
 
     private final DailyEntryRepository dailyEntryRepository;
     private final DailyEntryMapper dailyEntryMapper;
-    private final UserRepository userRepository;
-
-    private static final Long TEMP_USER_ID = 1L;
 
     public DailyEntryService(DailyEntryRepository dailyEntryRepository
             , DailyEntryMapper dailyEntryMapper, UserRepository userRepository) {
         this.dailyEntryRepository = dailyEntryRepository;
         this.dailyEntryMapper = dailyEntryMapper;
-        this.userRepository = userRepository;
+    }
+
+    private User getCurrentUser() {
+        return (User) Objects.requireNonNull(SecurityContextHolder
+                        .getContext()
+                        .getAuthentication())
+                .getPrincipal();
     }
 
     public DailyEntryResponse save(CreateDailyEntryRequest request) {
-        User user = userRepository
-                .findById(TEMP_USER_ID)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = getCurrentUser();
 
         DailyEntry dailyEntry = dailyEntryRepository
-                .findByUser_IdAndEntryDate(TEMP_USER_ID, request.getEntryDate())
+                .findByUser_IdAndEntryDate(user.getId(), request.getEntryDate())
                 .orElseGet(() -> {
                     DailyEntry newEntry = dailyEntryMapper.toEntity(request);
                     newEntry.setUser(user);
@@ -45,14 +48,16 @@ public class DailyEntryService {
     }
 
     public DailyEntryResponse getByDate(LocalDate entryDate) {
-        DailyEntry dailyEntry = dailyEntryRepository.findByUser_IdAndEntryDate(TEMP_USER_ID, entryDate)
+        User user = getCurrentUser();
+        DailyEntry dailyEntry = dailyEntryRepository.findByUser_IdAndEntryDate(user.getId(), entryDate)
                 .orElseThrow(() -> new RuntimeException("Daily entry not found"));
         return dailyEntryMapper.toResponse(dailyEntry);
     }
 
     public List<DailyEntryResponse> getByDateBetween(LocalDate startDate, LocalDate endDate) {
+        User user = getCurrentUser();
         List<DailyEntry> dailyEntries = dailyEntryRepository
-                .findByUser_IdAndEntryDateBetweenOrderByEntryDateAsc(TEMP_USER_ID, startDate, endDate);
+                .findByUser_IdAndEntryDateBetweenOrderByEntryDateAsc(user.getId(), startDate, endDate);
         return dailyEntries
                 .stream()
                 .map(dailyEntryMapper::toResponse)

@@ -1,6 +1,7 @@
 package com.flyweight.poker_dashboard.dailyentry.mapper;
 
 import com.flyweight.poker_dashboard.user.User;
+import com.flyweight.poker_dashboard.user.dto.LoginUserResponse;
 import com.flyweight.poker_dashboard.user.dto.RegisterUserRequest;
 import com.flyweight.poker_dashboard.user.dto.UserResponse;
 import org.mapstruct.Mapper;
@@ -16,4 +17,8 @@ public interface UserMapper {
     User toEntity(RegisterUserRequest request);
 
     UserResponse toResponse(User user);
+
+    @Mapping(target = "user", source = "user")
+    @Mapping(target = "token", source = "token")
+    LoginUserResponse toLoginUserResponse(User user, String token);
 }

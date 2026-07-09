@@ -1,6 +1,7 @@
 package com.flyweight.poker_dashboard.user;
 
 import com.flyweight.poker_dashboard.user.dto.LoginUserRequest;
+import com.flyweight.poker_dashboard.user.dto.LoginUserResponse;
 import com.flyweight.poker_dashboard.user.dto.RegisterUserRequest;
 import com.flyweight.poker_dashboard.user.dto.UserResponse;
 import jakarta.validation.Valid;
@@ -29,7 +30,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public UserResponse login(@Valid @RequestBody LoginUserRequest request) {
+    public LoginUserResponse login(@Valid @RequestBody LoginUserRequest request) {
         return userService.login(request);
     }
 }
