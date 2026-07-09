@@ -9,7 +9,11 @@ import DailyEntryForm from '../daily-entry/DailyEntryForm';
 import MonthCalendar from './MonthCalendar';
 import MonthNavigation from './MonthNavigation';
 
-function CalendarPage() {
+type CalendarPageProps = {
+  onLogout: () => void;
+};
+
+function CalendarPage({ onLogout }: CalendarPageProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 6, 1));
   const [selectedDay, setSelectedDay] = useState(9);
   const [entriesByDate, setEntriesByDate] = useState<
@@ -54,7 +58,7 @@ function CalendarPage() {
 
   return (
     <div className="app">
-      <AppHeader />
+      <AppHeader onLogout={onLogout} />
 
       <main className="dashboard-layout">
         <section className="calendar-section">

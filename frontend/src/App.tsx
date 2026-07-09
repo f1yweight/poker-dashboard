@@ -1,7 +1,7 @@
-import CalendarPage from './features/calendar/CalendarPage';
+import AppRouter from './app/AppRouter';
 
 function App() {
-  return <CalendarPage />;
+  return <AppRouter />;
 }
 
 export default App;
