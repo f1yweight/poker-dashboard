@@ -1,6 +1,8 @@
 package com.flyweight.poker_dashboard.user;
 
 import com.flyweight.poker_dashboard.dailyentry.mapper.UserMapper;
+import com.flyweight.poker_dashboard.exception.InvalidCredentialsException;
+import com.flyweight.poker_dashboard.exception.UserAlreadyExistsException;
 import com.flyweight.poker_dashboard.security.JwtService;
 import com.flyweight.poker_dashboard.user.dto.LoginUserRequest;
 import com.flyweight.poker_dashboard.user.dto.LoginUserResponse;
@@ -30,11 +32,11 @@ public class UserService {
     public UserResponse register(RegisterUserRequest request) {
 
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            throw new UserAlreadyExistsException("Username already exists");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new UserAlreadyExistsException("Email already exists");
         }
 
         User user = userMapper.toEntity(request);
@@ -47,10 +49,10 @@ public class UserService {
     public LoginUserResponse login(LoginUserRequest request) {
         User user = userRepository
                 .findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new InvalidCredentialsException("Invalid email or password");
         }
 
         String token = jwtService.generateToken(user);
