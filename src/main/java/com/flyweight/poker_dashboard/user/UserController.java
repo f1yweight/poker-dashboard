@@ -1,8 +1,9 @@
 package com.flyweight.poker_dashboard.user;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.flyweight.poker_dashboard.user.dto.RegisterUserRequest;
+import com.flyweight.poker_dashboard.user.dto.UserResponse;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -19,5 +20,10 @@ public class UserController {
     @GetMapping
     public List<User> findAll() {
         return userService.findAll();
+    }
+
+    @PostMapping("/register")
+    public UserResponse register(@Valid @RequestBody RegisterUserRequest request) {
+        return userService.register(request);
     }
 }
