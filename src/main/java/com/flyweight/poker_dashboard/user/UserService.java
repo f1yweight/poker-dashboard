@@ -1,6 +1,7 @@
 package com.flyweight.poker_dashboard.user;
 
 import com.flyweight.poker_dashboard.dailyentry.mapper.UserMapper;
+import com.flyweight.poker_dashboard.user.dto.LoginUserRequest;
 import com.flyweight.poker_dashboard.user.dto.RegisterUserRequest;
 import com.flyweight.poker_dashboard.user.dto.UserResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +37,18 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
         return userMapper.toResponse(savedUser);
+    }
+
+    public UserResponse login(LoginUserRequest request) {
+        User user = userRepository
+                .findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new RuntimeException("Invalid email or password");
+        }
+
+        return userMapper.toResponse(user);
     }
 
     public List<User> findAll() {
