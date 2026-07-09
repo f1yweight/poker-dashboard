@@ -142,3 +142,24 @@ button {
     padding: 16px;
   }
 }
+
+.calendar-day.has-entry {
+  border-color: #16a34a;
+  background: #dcfce7;
+}
+
+.calendar-day.has-entry.selected {
+  border-color: #2563eb;
+  background: #bfdbfe;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.save-status {
+  color: #15803d;
+  font-weight: 600;
+}

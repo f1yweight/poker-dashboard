@@ -1,3 +1,4 @@
+import { formatDateForApi } from '../../shared/date/dateUtils';
 import { getCalendarDays } from './calendarUtils';
 
 const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -5,12 +6,14 @@ const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 type MonthCalendarProps = {
   currentMonth: Date;
   selectedDay: number;
+  entryDates: string[];
   onSelectDay: (day: number) => void;
 };
 
 function MonthCalendar({
   currentMonth,
   selectedDay,
+  entryDates,
   onSelectDay,
 }: MonthCalendarProps) {
   const calendarDays = getCalendarDays(
@@ -37,11 +40,24 @@ function MonthCalendar({
           );
         }
 
+        const dayDate = new Date(
+          currentMonth.getFullYear(),
+          currentMonth.getMonth(),
+          day,
+        );
+
+        const dayDateKey = formatDateForApi(dayDate);
+        const hasEntry = entryDates.includes(dayDateKey);
+
         return (
           <button
-            className={
-              day === selectedDay ? 'calendar-day selected' : 'calendar-day'
-            }
+            className={[
+              'calendar-day',
+              day === selectedDay ? 'selected' : '',
+              hasEntry ? 'has-entry' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             key={day}
             type="button"
             onClick={() => onSelectDay(day)}

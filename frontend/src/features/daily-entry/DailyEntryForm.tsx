@@ -1,37 +1,47 @@
 import { useState } from 'react';
 
+import { formatDateForApi } from '../../shared/date/dateUtils';
+import type {
+  DailyEntryFormData,
+  DailyEntryPayload,
+} from './dailyEntryTypes';
+
 type DailyEntryFormProps = {
   currentMonth: Date;
   selectedDay: number;
+  selectedEntry?: DailyEntryPayload;
+  isSaved: boolean;
+  onSave: (payload: DailyEntryPayload) => void;
 };
 
-type DailyEntryFormData = {
-  mttHours: string;
-  mttPlayed: string;
-  handsPlayed: string;
-  evBb100: string;
-  profit: string;
-  abi: string;
-  learningHours: string;
-  sportHours: string;
-  comment: string;
+const emptyFormData: DailyEntryFormData = {
+  mttHours: '',
+  mttPlayed: '',
+  handsPlayed: '',
+  evBb100: '',
+  profit: '',
+  abi: '',
+  learningHours: '',
+  sportHours: '',
+  comment: '',
 };
 
-type DailyEntryPayload = {
-  entryDate: string;
-  mttHours: number | null;
-  mttPlayed: number | null;
-  handsPlayed: number | null;
-  evBb100: number | null;
-  profit: number | null;
-  abi: number | null;
-  learningHours: number | null;
-  sportHours: number | null;
-  comment: string;
-};
+function toFormValue(value: number | null) {
+  return value === null ? '' : String(value);
+}
 
-function formatDateForApi(date: Date) {
-  return date.toISOString().slice(0, 10);
+function payloadToFormData(payload: DailyEntryPayload): DailyEntryFormData {
+  return {
+    mttHours: toFormValue(payload.mttHours),
+    mttPlayed: toFormValue(payload.mttPlayed),
+    handsPlayed: toFormValue(payload.handsPlayed),
+    evBb100: toFormValue(payload.evBb100),
+    profit: toFormValue(payload.profit),
+    abi: toFormValue(payload.abi),
+    learningHours: toFormValue(payload.learningHours),
+    sportHours: toFormValue(payload.sportHours),
+    comment: payload.comment,
+  };
 }
 
 function toNumberOrNull(value: string) {
@@ -42,7 +52,13 @@ function toNumberOrNull(value: string) {
   return Number(value);
 }
 
-function DailyEntryForm({ currentMonth, selectedDay }: DailyEntryFormProps) {
+function DailyEntryForm({
+  currentMonth,
+  selectedDay,
+  selectedEntry,
+  isSaved,
+  onSave,
+}: DailyEntryFormProps) {
   const selectedDate = new Date(
     currentMonth.getFullYear(),
     currentMonth.getMonth(),
@@ -55,16 +71,12 @@ function DailyEntryForm({ currentMonth, selectedDay }: DailyEntryFormProps) {
     year: 'numeric',
   });
 
-  const [formData, setFormData] = useState<DailyEntryFormData>({
-    mttHours: '',
-    mttPlayed: '',
-    handsPlayed: '',
-    evBb100: '',
-    profit: '',
-    abi: '',
-    learningHours: '',
-    sportHours: '',
-    comment: '',
+  const [formData, setFormData] = useState<DailyEntryFormData>(() => {
+    if (selectedEntry) {
+      return payloadToFormData(selectedEntry);
+    }
+
+    return emptyFormData;
   });
 
   function handleFieldChange(field: keyof DailyEntryFormData, value: string) {
@@ -90,7 +102,7 @@ function DailyEntryForm({ currentMonth, selectedDay }: DailyEntryFormProps) {
       comment: formData.comment,
     };
 
-    console.log(payload);
+    onSave(payload);
   }
 
   return (
@@ -104,7 +116,9 @@ function DailyEntryForm({ currentMonth, selectedDay }: DailyEntryFormProps) {
             type="number"
             step="0.5"
             value={formData.mttHours}
-            onChange={(event) => handleFieldChange('mttHours', event.target.value)}
+            onChange={(event) =>
+              handleFieldChange('mttHours', event.target.value)
+            }
           />
         </label>
 
@@ -114,7 +128,9 @@ function DailyEntryForm({ currentMonth, selectedDay }: DailyEntryFormProps) {
             type="number"
             step="1"
             value={formData.mttPlayed}
-            onChange={(event) => handleFieldChange('mttPlayed', event.target.value)}
+            onChange={(event) =>
+              handleFieldChange('mttPlayed', event.target.value)
+            }
           />
         </label>
 
@@ -124,7 +140,9 @@ function DailyEntryForm({ currentMonth, selectedDay }: DailyEntryFormProps) {
             type="number"
             step="1"
             value={formData.handsPlayed}
-            onChange={(event) => handleFieldChange('handsPlayed', event.target.value)}
+            onChange={(event) =>
+              handleFieldChange('handsPlayed', event.target.value)
+            }
           />
         </label>
 
@@ -134,7 +152,9 @@ function DailyEntryForm({ currentMonth, selectedDay }: DailyEntryFormProps) {
             type="number"
             step="0.01"
             value={formData.evBb100}
-            onChange={(event) => handleFieldChange('evBb100', event.target.value)}
+            onChange={(event) =>
+              handleFieldChange('evBb100', event.target.value)
+            }
           />
         </label>
 
@@ -195,7 +215,10 @@ function DailyEntryForm({ currentMonth, selectedDay }: DailyEntryFormProps) {
           />
         </label>
 
-        <button type="submit">Save day</button>
+        <div className="form-actions">
+          <button type="submit">Save day</button>
+          {isSaved && <span className="save-status">Saved locally</span>}
+        </div>
       </form>
     </section>
   );
