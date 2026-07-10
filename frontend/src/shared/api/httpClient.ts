@@ -9,6 +9,16 @@ type HttpRequestOptions = {
   body?: unknown;
 };
 
+export class HttpError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'HttpError';
+    this.status = status;
+  }
+}
+
 export async function httpRequest<TResponse>(
   path: string,
   options: HttpRequestOptions = {},
@@ -30,7 +40,10 @@ export async function httpRequest<TResponse>(
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
+    throw new HttpError(
+      response.status,
+      `Request failed with status ${response.status}`,
+    );
   }
 
   return response.json() as Promise<TResponse>;

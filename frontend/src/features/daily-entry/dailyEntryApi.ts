@@ -21,3 +21,12 @@ export function saveDailyEntry(payload: DailyEntryPayload) {
     body: payload,
   });
 }
+
+export function getDailyEntriesByDateRange(
+  startDate: string,
+  endDate: string,
+) {
+  return httpRequest<DailyEntryResponse[]>(
+    `/api/daily-entries?startDate=${startDate}&endDate=${endDate}`,
+  );
+}

@@ -5,3 +5,11 @@ export function formatDateForApi(date: Date) {
 
   return `${year}-${month}-${day}`;
 }
+
+export function getMonthStartDate(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+export function getMonthEndDate(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+}

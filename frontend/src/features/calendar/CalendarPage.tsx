@@ -1,12 +1,18 @@
-import { useState } from 'react';
-
-import type { DailyEntryPayload } from '../daily-entry/dailyEntryTypes';
-
-import { formatDateForApi } from '../../shared/date/dateUtils';
-import { saveDailyEntry } from '../daily-entry/dailyEntryApi';
+import { useEffect, useState } from 'react';
 
 import AppHeader from '../../components/AppHeader';
+import {
+  formatDateForApi,
+  getMonthEndDate,
+  getMonthStartDate,
+} from '../../shared/date/dateUtils';
+import {
+  getDailyEntriesByDateRange,
+  saveDailyEntry,
+  type DailyEntryResponse,
+} from '../daily-entry/dailyEntryApi';
 import DailyEntryForm from '../daily-entry/DailyEntryForm';
+import type { DailyEntryPayload } from '../daily-entry/dailyEntryTypes';
 import MonthCalendar from './MonthCalendar';
 import MonthNavigation from './MonthNavigation';
 
@@ -14,18 +20,40 @@ type CalendarPageProps = {
   onLogout: () => void;
 };
 
+function dailyEntryResponseToPayload(
+  response: DailyEntryResponse,
+): DailyEntryPayload {
+  return {
+    entryDate: response.entryDate,
+    mttHours: response.mttHours,
+    mttPlayed: response.mttPlayed,
+    handsPlayed: response.handsPlayed,
+    evBb100: response.evBb100,
+    profit: response.profit,
+    abi: response.abi,
+    learningHours: response.learningHours,
+    sportHours: response.sportHours,
+    comment: response.comment ?? '',
+  };
+}
+
 function CalendarPage({ onLogout }: CalendarPageProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 6, 1));
   const [selectedDay, setSelectedDay] = useState(9);
+
   const [entriesByDate, setEntriesByDate] = useState<
     Record<string, DailyEntryPayload>
   >({});
+
   const [lastSavedEntryDate, setLastSavedEntryDate] = useState<string | null>(
     null,
   );
 
   const [isSavingEntry, setIsSavingEntry] = useState(false);
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
+
+  const [isLoadingEntry, setIsLoadingEntry] = useState(false);
+  const [loadErrorMessage, setLoadErrorMessage] = useState<string | null>(null);
 
   const selectedDate = new Date(
     currentMonth.getFullYear(),
@@ -36,6 +64,37 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
   const selectedEntryDate = formatDateForApi(selectedDate);
   const selectedEntry = entriesByDate[selectedEntryDate];
   const isSelectedEntrySaved = lastSavedEntryDate === selectedEntryDate;
+
+  useEffect(() => {
+    async function loadMonthEntries() {
+      setIsLoadingEntry(true);
+      setLoadErrorMessage(null);
+
+      const startDate = formatDateForApi(getMonthStartDate(currentMonth));
+      const endDate = formatDateForApi(getMonthEndDate(currentMonth));
+
+      try {
+        const responses = await getDailyEntriesByDateRange(startDate, endDate);
+
+        const nextEntries = responses.reduce<Record<string, DailyEntryPayload>>(
+          (entries, response) => {
+            const payload = dailyEntryResponseToPayload(response);
+            entries[payload.entryDate] = payload;
+            return entries;
+          },
+          {},
+        );
+
+        setEntriesByDate(nextEntries);
+      } catch {
+        setLoadErrorMessage('Could not load month. Please try again.');
+      } finally {
+        setIsLoadingEntry(false);
+      }
+    }
+
+    void loadMonthEntries();
+  }, [currentMonth]);
 
   function handlePreviousMonth() {
     setCurrentMonth(
@@ -92,13 +151,14 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
         </section>
 
         <DailyEntryForm
-          key={selectedEntryDate}
+          key={`${selectedEntryDate}-${selectedEntry ? 'loaded' : 'empty'}`}
           currentMonth={currentMonth}
           selectedDay={selectedDay}
           selectedEntry={selectedEntry}
           isSaved={isSelectedEntrySaved}
           isSaving={isSavingEntry}
-          errorMessage={saveErrorMessage}
+          isLoading={isLoadingEntry}
+          errorMessage={saveErrorMessage ?? loadErrorMessage}
           onSave={handleSaveEntry}
         />
       </main>
