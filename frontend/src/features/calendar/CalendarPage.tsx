@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { DailyEntryPayload } from '../daily-entry/dailyEntryTypes';
 
 import { formatDateForApi } from '../../shared/date/dateUtils';
+import { saveDailyEntry } from '../daily-entry/dailyEntryApi';
 
 import AppHeader from '../../components/AppHeader';
 import DailyEntryForm from '../daily-entry/DailyEntryForm';
@@ -22,6 +23,9 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
   const [lastSavedEntryDate, setLastSavedEntryDate] = useState<string | null>(
     null,
   );
+
+  const [isSavingEntry, setIsSavingEntry] = useState(false);
+  const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
 
   const selectedDate = new Date(
     currentMonth.getFullYear(),
@@ -47,13 +51,24 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
     setSelectedDay(1);
   }
 
-  function handleSaveEntry(payload: DailyEntryPayload) {
-    setEntriesByDate({
-      ...entriesByDate,
-      [payload.entryDate]: payload,
-    });
+  async function handleSaveEntry(payload: DailyEntryPayload) {
+    setIsSavingEntry(true);
+    setSaveErrorMessage(null);
 
-    setLastSavedEntryDate(payload.entryDate);
+    try {
+      await saveDailyEntry(payload);
+
+      setEntriesByDate({
+        ...entriesByDate,
+        [payload.entryDate]: payload,
+      });
+
+      setLastSavedEntryDate(payload.entryDate);
+    } catch {
+      setSaveErrorMessage('Could not save day. Please try again.');
+    } finally {
+      setIsSavingEntry(false);
+    }
   }
 
   return (
@@ -82,6 +97,8 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
           selectedDay={selectedDay}
           selectedEntry={selectedEntry}
           isSaved={isSelectedEntrySaved}
+          isSaving={isSavingEntry}
+          errorMessage={saveErrorMessage}
           onSave={handleSaveEntry}
         />
       </main>

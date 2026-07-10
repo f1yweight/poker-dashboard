@@ -234,3 +234,14 @@ button {
   cursor: not-allowed;
   opacity: 0.7;
 }
+
+.entry-error {
+  margin: 0;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.entry-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}

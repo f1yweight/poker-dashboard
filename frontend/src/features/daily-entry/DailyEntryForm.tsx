@@ -12,6 +12,8 @@ type DailyEntryFormProps = {
   selectedEntry?: DailyEntryPayload;
   isSaved: boolean;
   onSave: (payload: DailyEntryPayload) => void;
+  isSaving: boolean;
+  errorMessage: string | null;
 };
 
 const emptyFormData: DailyEntryFormData = {
@@ -58,6 +60,8 @@ function DailyEntryForm({
   selectedEntry,
   isSaved,
   onSave,
+  isSaving,
+  errorMessage,
 }: DailyEntryFormProps) {
   const selectedDate = new Date(
     currentMonth.getFullYear(),
@@ -215,9 +219,13 @@ function DailyEntryForm({
           />
         </label>
 
+        {errorMessage && <p className="entry-error">{errorMessage}</p>}
+
         <div className="form-actions">
-          <button type="submit">Save day</button>
-          {isSaved && <span className="save-status">Saved locally</span>}
+          <button type="submit" disabled={isSaving}>
+            {isSaving ? 'Saving...' : 'Save day'}
+          </button>
+          {isSaved && <span className="save-status">Saved</span>}
         </div>
       </form>
     </section>
