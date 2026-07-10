@@ -1,18 +1,22 @@
 import { useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { clearAuthToken, getAuthToken } from '../features/auth/authToken';
 
 import CalendarPage from '../features/calendar/CalendarPage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
 
 function AppRouter() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() =>
+    Boolean(getAuthToken()),
+  );
 
   function handleLogin() {
     setIsAuthenticated(true);
   }
 
   function handleLogout() {
+    clearAuthToken();
     setIsAuthenticated(false);
   }
 
@@ -33,11 +37,7 @@ function AppRouter() {
         />
 
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-
-        <Route
-          path="/register"
-          element={<RegisterPage onRegister={handleLogin} />}
-        />
+        <Route path="/register" element={<RegisterPage />} />
       </Routes>
     </BrowserRouter>
   );

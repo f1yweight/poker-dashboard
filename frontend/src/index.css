@@ -223,3 +223,14 @@ button {
 .auth-switch a:hover {
   text-decoration: underline;
 }
+
+.auth-error {
+  margin: 0;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.auth-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}

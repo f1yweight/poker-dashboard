@@ -1,22 +1,23 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+import { registerUser } from '../features/auth/authApi';
+
 type RegisterFormData = {
   username: string;
   email: string;
   password: string;
 };
 
-type RegisterPageProps = {
-  onRegister: () => void;
-};
-
-function RegisterPage({ onRegister }: RegisterPageProps) {
+function RegisterPage() {
   const [formData, setFormData] = useState<RegisterFormData>({
     username: '',
     email: '',
     password: '',
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
@@ -27,12 +28,20 @@ function RegisterPage({ onRegister }: RegisterPageProps) {
     });
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    console.log(formData);
-    onRegister();
-    navigate('/app');
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      await registerUser(formData);
+      navigate('/login');
+    } catch {
+      setErrorMessage('Registration failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -73,7 +82,11 @@ function RegisterPage({ onRegister }: RegisterPageProps) {
           />
         </label>
 
-        <button type="submit">Create account</button>
+        {errorMessage && <p className="auth-error">{errorMessage}</p>}
+
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Creating account...' : 'Create account'}
+        </button>
 
         <p className="auth-switch">
           Already have an account? <Link to="/login">Login</Link>

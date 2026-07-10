@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+import { loginUser } from '../features/auth/authApi';
+import { setAuthToken } from '../features/auth/authToken';
+
 type LoginFormData = {
   email: string;
   password: string;
@@ -16,6 +19,9 @@ function LoginPage({ onLogin }: LoginPageProps) {
     password: '',
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const navigate = useNavigate();
 
   function handleFieldChange(field: keyof LoginFormData, value: string) {
@@ -25,12 +31,24 @@ function LoginPage({ onLogin }: LoginPageProps) {
     });
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    console.log(formData);
-    onLogin();
-    navigate('/app');
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await loginUser(formData);
+      console.log(response);
+
+      setAuthToken(response.token);
+      onLogin();
+      navigate('/app');
+    } catch {
+      setErrorMessage('Invalid email or password.');
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -60,7 +78,11 @@ function LoginPage({ onLogin }: LoginPageProps) {
           />
         </label>
 
-        <button type="submit">Login</button>
+        {errorMessage && <p className="auth-error">{errorMessage}</p>}
+
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Logging in...' : 'Login'}
+        </button>
 
         <p className="auth-switch">
           No account yet? <Link to="/register">Create one</Link>
