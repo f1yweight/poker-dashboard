@@ -29,6 +29,12 @@ const emptyFormData: DailyEntryFormData = {
   comment: '',
 };
 
+const selectedDateFormatter = new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
 function toFormValue(value: number | null) {
   return value === null ? '' : String(value);
 }
@@ -71,11 +77,7 @@ function DailyEntryForm({
     selectedDay,
   );
 
-  const selectedDateLabel = selectedDate.toLocaleString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const selectedDateLabel = selectedDateFormatter.format(selectedDate);
 
   const [formData, setFormData] = useState<DailyEntryFormData>(() => {
     if (selectedEntry) {
