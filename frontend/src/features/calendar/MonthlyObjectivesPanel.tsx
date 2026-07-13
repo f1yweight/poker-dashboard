@@ -15,6 +15,11 @@ import {
   X,
 } from 'lucide-react';
 
+import type {
+  MonthlyObjectiveTargets,
+  UpdateMonthlyObjectiveTargetsRequest,
+} from './monthlyObjectiveTargetsApi';
+
 type MonthlySummary = {
   totalMttPlayed: number;
   totalLearningHours: number;
@@ -23,16 +28,22 @@ type MonthlySummary = {
 
 type MonthlyObjectivesPanelProps = {
   summary: MonthlySummary;
+  targets: MonthlyObjectiveTargets;
+  isLoading: boolean;
+  errorMessage: string | null;
+  onSaveTargets: (
+    payload: UpdateMonthlyObjectiveTargetsRequest,
+  ) => Promise<void>;
 };
 
-type MonthlyObjectiveTargets = {
-  mttPlayed: number;
-  learningHours: number;
-  sportHours: number;
+type MonthlyObjectiveTargetsFormData = {
+  mttPlayedTarget: string;
+  learningHoursTarget: string;
+  sportHoursTarget: string;
 };
 
 type Objective = {
-  key: keyof MonthlyObjectiveTargets;
+  key: keyof MonthlyObjectiveTargetsFormData;
   label: string;
   value: number;
   target: number;
@@ -40,29 +51,24 @@ type Objective = {
   icon: ElementType;
 };
 
-const defaultTargets: MonthlyObjectiveTargets = {
-  mttPlayed: 1000,
-  learningHours: 20,
-  sportHours: 12,
-};
+function targetsToFormData(
+  targets: MonthlyObjectiveTargets,
+): MonthlyObjectiveTargetsFormData {
+  return {
+    mttPlayedTarget: String(targets.mttPlayedTarget),
+    learningHoursTarget: String(targets.learningHoursTarget),
+    sportHoursTarget: String(targets.sportHoursTarget),
+  };
+}
 
-const targetStorageKey = 'poker-dashboard-monthly-objective-targets';
+function toNumberOrZero(value: string) {
+  const parsedValue = Number(value);
 
-function loadTargets(): MonthlyObjectiveTargets {
-  const storedTargets = localStorage.getItem(targetStorageKey);
-
-  if (!storedTargets) {
-    return defaultTargets;
+  if (Number.isNaN(parsedValue) || parsedValue < 0) {
+    return 0;
   }
 
-  try {
-    return {
-      ...defaultTargets,
-      ...JSON.parse(storedTargets),
-    };
-  } catch {
-    return defaultTargets;
-  }
+  return parsedValue;
 }
 
 function formatNumber(value: number) {
@@ -77,16 +83,6 @@ function formatInteger(value: number) {
   }).format(value);
 }
 
-function toTargetValue(value: string) {
-  const parsedValue = Number(value);
-
-  if (Number.isNaN(parsedValue) || parsedValue < 0) {
-    return 0;
-  }
-
-  return parsedValue;
-}
-
 function getProgressPercent(value: number, target: number) {
   if (target === 0) {
     return 0;
@@ -95,37 +91,42 @@ function getProgressPercent(value: number, target: number) {
   return Math.min((value / target) * 100, 100);
 }
 
-function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
-  const [targets, setTargets] = useState<MonthlyObjectiveTargets>(loadTargets);
+function MonthlyObjectivesPanel({
+  summary,
+  targets,
+  isLoading,
+  errorMessage,
+  onSaveTargets,
+}: MonthlyObjectivesPanelProps) {
   const [draftTargets, setDraftTargets] =
-    useState<MonthlyObjectiveTargets>(targets);
+    useState<MonthlyObjectiveTargetsFormData>(() => targetsToFormData(targets));
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const actionsRef = useRef<HTMLDivElement>(null);
 
   const objectives: Objective[] = [
     {
-      key: 'mttPlayed',
+      key: 'mttPlayedTarget',
       label: 'MTT played',
       value: summary.totalMttPlayed,
-      target: targets.mttPlayed,
-      displayValue: `${formatInteger(summary.totalMttPlayed)} / ${formatInteger(targets.mttPlayed)}`,
+      target: targets.mttPlayedTarget,
+      displayValue: `${formatInteger(summary.totalMttPlayed)} / ${formatInteger(targets.mttPlayedTarget)}`,
       icon: Trophy,
     },
     {
-      key: 'learningHours',
+      key: 'learningHoursTarget',
       label: 'Learning hours',
       value: summary.totalLearningHours,
-      target: targets.learningHours,
-      displayValue: `${formatNumber(summary.totalLearningHours)} / ${formatNumber(targets.learningHours)}`,
+      target: targets.learningHoursTarget,
+      displayValue: `${formatNumber(summary.totalLearningHours)} / ${formatNumber(targets.learningHoursTarget)}`,
       icon: BookOpen,
     },
     {
-      key: 'sportHours',
+      key: 'sportHoursTarget',
       label: 'Sport hours',
       value: summary.totalSportHours,
-      target: targets.sportHours,
-      displayValue: `${formatNumber(summary.totalSportHours)} / ${formatNumber(targets.sportHours)}`,
+      target: targets.sportHoursTarget,
+      displayValue: `${formatNumber(summary.totalSportHours)} / ${formatNumber(targets.sportHoursTarget)}`,
       icon: Dumbbell,
     },
   ];
@@ -171,26 +172,30 @@ function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
   }, [isActionsOpen]);
 
   function handleOpenEditModal() {
-    setDraftTargets(targets);
+    setDraftTargets(targetsToFormData(targets));
     setIsActionsOpen(false);
     setIsEditModalOpen(true);
   }
 
   function handleDraftTargetChange(
-    targetKey: keyof MonthlyObjectiveTargets,
+    targetKey: keyof MonthlyObjectiveTargetsFormData,
     value: string,
   ) {
     setDraftTargets({
       ...draftTargets,
-      [targetKey]: toTargetValue(value),
+      [targetKey]: value,
     });
   }
 
-  function handleSubmitTargets(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmitTargets(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    setTargets(draftTargets);
-    localStorage.setItem(targetStorageKey, JSON.stringify(draftTargets));
+    await onSaveTargets({
+      mttPlayedTarget: toNumberOrZero(draftTargets.mttPlayedTarget),
+      learningHoursTarget: toNumberOrZero(draftTargets.learningHoursTarget),
+      sportHoursTarget: toNumberOrZero(draftTargets.sportHoursTarget),
+    });
+
     setIsEditModalOpen(false);
   }
 
@@ -205,6 +210,7 @@ function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
             type="button"
             onClick={() => setIsActionsOpen(!isActionsOpen)}
             aria-label="Open monthly objectives actions"
+            disabled={isLoading}
           >
             <Settings size={16} strokeWidth={2.4} />
           </button>
@@ -224,6 +230,8 @@ function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
           )}
         </div>
       </div>
+
+      {errorMessage && <p className="objectives-error">{errorMessage}</p>}
 
       {objectives.map((objective) => {
         const Icon = objective.icon;
@@ -291,9 +299,12 @@ function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
                   type="number"
                   min="0"
                   step="1"
-                  value={draftTargets.mttPlayed}
+                  value={draftTargets.mttPlayedTarget}
                   onChange={(event) =>
-                    handleDraftTargetChange('mttPlayed', event.target.value)
+                    handleDraftTargetChange(
+                      'mttPlayedTarget',
+                      event.target.value,
+                    )
                   }
                 />
               </label>
@@ -304,10 +315,10 @@ function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
                   type="number"
                   min="0"
                   step="0.5"
-                  value={draftTargets.learningHours}
+                  value={draftTargets.learningHoursTarget}
                   onChange={(event) =>
                     handleDraftTargetChange(
-                      'learningHours',
+                      'learningHoursTarget',
                       event.target.value,
                     )
                   }
@@ -320,24 +331,34 @@ function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
                   type="number"
                   min="0"
                   step="0.5"
-                  value={draftTargets.sportHours}
+                  value={draftTargets.sportHoursTarget}
                   onChange={(event) =>
-                    handleDraftTargetChange('sportHours', event.target.value)
+                    handleDraftTargetChange(
+                      'sportHoursTarget',
+                      event.target.value,
+                    )
                   }
                 />
               </label>
+
+              {errorMessage && <p className="objectives-error">{errorMessage}</p>}
 
               <div className="entry-modal-footer">
                 <button
                   className="entry-cancel-button"
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
+                  disabled={isLoading}
                 >
                   Cancel
                 </button>
 
-                <button className="entry-save-button" type="submit">
-                  Save goals
+                <button
+                  className="entry-save-button"
+                  type="submit"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Saving...' : 'Save goals'}
                 </button>
               </div>
             </form>

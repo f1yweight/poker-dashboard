@@ -19,6 +19,12 @@ import MonthlySummaryPanel from './MonthlySummaryPanel';
 import { calculateMonthlySummary } from './monthlySummaryUtils';
 import MonthlyObjectivesPanel from './MonthlyObjectivesPanel';
 import ProfitTrajectoryPanel from './ProfitTrajectoryPanel';
+import {
+  getMonthlyObjectiveTargets,
+  updateMonthlyObjectiveTargets,
+  type MonthlyObjectiveTargets,
+  type UpdateMonthlyObjectiveTargetsRequest,
+} from '../monthly-objectives/monthlyObjectiveTargetsApi';
 
 type CalendarPageProps = {
   onLogout: () => void;
@@ -40,6 +46,14 @@ function dailyEntryResponseToPayload(
     comment: response.comment ?? '',
   };
 }
+
+const defaultObjectiveTargets: MonthlyObjectiveTargets = {
+  id: 0,
+  targetMonth: '',
+  mttPlayedTarget: 400,
+  learningHoursTarget: 10,
+  sportHoursTarget: 5,
+};
 
 function CalendarPage({ onLogout }: CalendarPageProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 6, 1));
@@ -66,11 +80,21 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
   );
 
   const selectedEntryDate = formatDateForApi(selectedDate);
+  const selectedMonthDate = formatDateForApi(getMonthStartDate(currentMonth));
   const selectedEntry = entriesByDate[selectedEntryDate];
   const isSelectedEntrySaved = lastSavedEntryDate === selectedEntryDate;
   const summary = calculateMonthlySummary(entriesByDate);
 
   const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
+
+  const [objectiveTargets, setObjectiveTargets] =
+    useState<MonthlyObjectiveTargets>(defaultObjectiveTargets);
+
+  const [isLoadingObjectiveTargets, setIsLoadingObjectiveTargets] =
+    useState(false);
+
+  const [objectiveTargetsErrorMessage, setObjectiveTargetsErrorMessage] =
+    useState<string | null>(null);
 
   useEffect(() => {
     async function loadMonthEntries() {
@@ -102,6 +126,27 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
 
     void loadMonthEntries();
   }, [currentMonth]);
+
+  useEffect(() => {
+    async function loadObjectiveTargets() {
+      setIsLoadingObjectiveTargets(true);
+      setObjectiveTargetsErrorMessage(null);
+
+      try {
+        const targets = await getMonthlyObjectiveTargets(selectedMonthDate);
+        setObjectiveTargets(targets);
+      } catch {
+        setObjectiveTargets(defaultObjectiveTargets);
+        setObjectiveTargetsErrorMessage(
+          'Could not load monthly objectives. Please try again.',
+        );
+      } finally {
+        setIsLoadingObjectiveTargets(false);
+      }
+    }
+
+    void loadObjectiveTargets();
+  }, [selectedMonthDate]);
 
   function handlePreviousMonth() {
     setCurrentMonth(
@@ -137,6 +182,28 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
     }
   }
 
+  async function handleSaveObjectiveTargets(
+    payload: UpdateMonthlyObjectiveTargetsRequest,
+  ) {
+    setIsLoadingObjectiveTargets(true);
+    setObjectiveTargetsErrorMessage(null);
+
+    try {
+      const savedTargets = await updateMonthlyObjectiveTargets(
+        selectedMonthDate,
+        payload,
+      );
+
+      setObjectiveTargets(savedTargets);
+    } catch {
+      setObjectiveTargetsErrorMessage(
+        'Could not save monthly objectives. Please try again.',
+      );
+    } finally {
+      setIsLoadingObjectiveTargets(false);
+    }
+  }
+
   function handleSelectDay(day: number) {
     setSelectedDay(day);
     setIsEntryModalOpen(true);
@@ -152,7 +219,13 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
 
       <main className="dashboard-layout">
         <div className="dashboard-grid">
-          <MonthlyObjectivesPanel summary={summary} />
+          <MonthlyObjectivesPanel
+            summary={summary}
+            targets={objectiveTargets}
+            isLoading={isLoadingObjectiveTargets}
+            errorMessage={objectiveTargetsErrorMessage}
+            onSaveTargets={handleSaveObjectiveTargets}
+          />
 
           <section className="calendar-section">
             <MonthNavigation
