@@ -169,7 +169,7 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
             />
           </section>
 
-          <ProfitTrajectoryPanel />
+          <ProfitTrajectoryPanel entriesByDate={entriesByDate} />
         </div>
 
         <MonthlySummaryPanel summary={monthlySummary} />

@@ -817,6 +817,60 @@ button {
 .profit-trajectory-panel {
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 18px;
+  background: var(--color-surface);
+}
+
+.profit-trajectory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.profit-trajectory-panel h2 {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.profit-trajectory-value {
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.profit-trajectory-value.positive {
+  color: #f5b700;
+}
+
+.profit-trajectory-value.negative {
+  color: #ff3d72;
+}
+
+.profit-chart {
+  min-height: 300px;
+  flex: 1;
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.profit-chart p {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .chart-placeholder {
