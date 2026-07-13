@@ -93,7 +93,7 @@ button {
   border: 1px solid var(--color-border);
   border-radius: 10px;
   box-shadow: var(--shadow-card);
-  padding: 24px;
+  padding: 0;
 }
 
 .month-header {
@@ -187,29 +187,63 @@ button {
 
 .entry-form {
   display: grid;
+  gap: 24px;
+  padding: 24px 28px 0;
+}
+
+.entry-form-section {
+  display: grid;
   gap: 16px;
+}
+
+.entry-form-section h3 {
+  margin: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 15px;
+  text-transform: uppercase;
+}
+
+.entry-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 24px;
 }
 
 .entry-form label {
   display: grid;
-  gap: 6px;
-  font-weight: 600;
+  gap: 8px;
+  color: var(--color-text-muted);
+  font-weight: 700;
 }
 
 .entry-form input,
 .entry-form textarea {
   width: 100%;
-  border: 1px solid #bcccdc;
-  border-radius: 6px;
-  padding: 10px 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 8px;
+  padding: 11px 12px;
+  background: #080a0f;
+  color: var(--color-text);
 }
 
-.entry-form button {
-  border: 0;
-  border-radius: 6px;
-  padding: 10px 14px;
-  background: #2563eb;
-  color: #ffffff;
+.entry-form input:focus,
+.entry-form textarea:focus {
+  outline: none;
+  border-color: rgb(245 183 0 / 0.7);
+  box-shadow: 0 0 0 3px rgb(245 183 0 / 0.12);
+}
+
+.entry-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin: 0 -28px;
+  padding: 18px 28px;
+  border-top: 1px solid var(--color-border);
+  background: #0b0d12;
 }
 
 @media (max-width: 900px) {
@@ -335,7 +369,7 @@ button {
   font-weight: 600;
 }
 
-.entry-form button:disabled {
+.entry-save-button:disabled {
   cursor: not-allowed;
   opacity: 0.7;
 }
@@ -361,6 +395,78 @@ button {
   width: min(720px, 100%);
   max-height: calc(100vh - 48px);
   overflow: auto;
+  border-radius: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 28px 80px rgb(0 0 0 / 0.45);
+}
+
+.entry-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.entry-modal-header h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.entry-modal-header p {
+  margin: 6px 0 0;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.entry-modal-header strong {
+  color: var(--color-accent);
+}
+
+.entry-modal-close {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 28px;
+  line-height: 1;
+}
+
+.entry-cancel-button {
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 14px;
+  background: transparent;
+  color: #d1d5db;
+  font-weight: 800;
+}
+
+.entry-cancel-button:hover {
+  color: var(--color-text);
+  background: rgb(255 255 255 / 0.04);
+}
+
+.entry-save-button {
+  min-width: 112px;
+  border: 1px solid rgb(245 183 0 / 0.55);
+  border-radius: 9px;
+  padding: 12px 18px;
+  background: rgb(245 183 0 / 0.16);
+  color: #ffd166;
+  font-weight: 900;
+  box-shadow: none;
+}
+
+.entry-save-button:hover {
+  border-color: rgb(245 183 0 / 0.8);
+  background: rgb(245 183 0 / 0.24);
+  color: #ffe08a;
+}
+
+.entry-save-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
 }
 
 .entry-modal .entry-section {
@@ -493,6 +599,12 @@ button {
 
 @media (max-width: 1180px) {
   .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .entry-form-grid {
     grid-template-columns: 1fr;
   }
 }

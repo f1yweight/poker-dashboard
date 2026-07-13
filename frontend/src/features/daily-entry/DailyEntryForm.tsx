@@ -15,17 +15,18 @@ type DailyEntryFormProps = {
   isLoading: boolean;
   errorMessage: string | null;
   onSave: (payload: DailyEntryPayload) => void;
+  onClose: () => void;
 };
 
 const emptyFormData: DailyEntryFormData = {
-  mttHours: '',
-  mttPlayed: '',
-  handsPlayed: '',
-  evBb100: '',
-  profit: '',
-  abi: '',
-  learningHours: '',
-  sportHours: '',
+  mttHours: '0',
+  mttPlayed: '0',
+  handsPlayed: '0',
+  evBb100: '0',
+  profit: '0',
+  abi: '0',
+  learningHours: '0',
+  sportHours: '0',
   comment: '',
 };
 
@@ -70,6 +71,7 @@ function DailyEntryForm({
   isLoading,
   errorMessage,
   onSave,
+  onClose,
 }: DailyEntryFormProps) {
   const selectedDate = new Date(
     currentMonth.getFullYear(),
@@ -115,124 +117,155 @@ function DailyEntryForm({
 
   return (
     <section className="entry-section">
-      <h2>Selected day: {selectedDateLabel}</h2>
+      <div className="entry-modal-header">
+        <div>
+          <h2>{selectedDateLabel}</h2>
+          <p>
+            Log Session <span>›</span> <strong>Daily Entry</strong>
+          </p>
+        </div>
+
+        <button className="entry-modal-close" type="button" onClick={onClose}>
+          ×
+        </button>
+      </div>
 
       {isLoading && <p className="entry-loading">Loading day...</p>}
 
       <form className="entry-form" onSubmit={handleSubmit}>
-        <label>
-          MTT hours
-          <input
-            type="number"
-            step="0.5"
-            value={formData.mttHours}
-            onChange={(event) =>
-              handleFieldChange('mttHours', event.target.value)
-            }
-          />
-        </label>
+        <div className="entry-form-section">
+          <h3>Poker session</h3>
 
-        <label>
-          MTT played
-          <input
-            type="number"
-            step="1"
-            value={formData.mttPlayed}
-            onChange={(event) =>
-              handleFieldChange('mttPlayed', event.target.value)
-            }
-          />
-        </label>
+          <div className="entry-form-grid">
+            <label>
+              MTT hours
+              <input
+                type="number"
+                step="0.5"
+                value={formData.mttHours}
+                onChange={(event) =>
+                  handleFieldChange('mttHours', event.target.value)
+                }
+              />
+            </label>
 
-        <label>
-          Hands played
-          <input
-            type="number"
-            step="1"
-            value={formData.handsPlayed}
-            onChange={(event) =>
-              handleFieldChange('handsPlayed', event.target.value)
-            }
-          />
-        </label>
+            <label>
+              MTT played
+              <input
+                type="number"
+                step="1"
+                value={formData.mttPlayed}
+                onChange={(event) =>
+                  handleFieldChange('mttPlayed', event.target.value)
+                }
+              />
+            </label>
 
-        <label>
-          EV bb/100
-          <input
-            type="number"
-            step="0.01"
-            value={formData.evBb100}
-            onChange={(event) =>
-              handleFieldChange('evBb100', event.target.value)
-            }
-          />
-        </label>
+            <label>
+              Hands played
+              <input
+                type="number"
+                step="1"
+                value={formData.handsPlayed}
+                onChange={(event) =>
+                  handleFieldChange('handsPlayed', event.target.value)
+                }
+              />
+            </label>
 
-        <label>
-          Profit
-          <input
-            type="number"
-            step="0.01"
-            value={formData.profit}
-            onChange={(event) =>
-              handleFieldChange('profit', event.target.value)
-            }
-          />
-        </label>
+            <label>
+              EV BB/100
+              <input
+                type="number"
+                step="0.01"
+                value={formData.evBb100}
+                onChange={(event) =>
+                  handleFieldChange('evBb100', event.target.value)
+                }
+              />
+            </label>
 
-        <label>
-          ABI
-          <input
-            type="number"
-            step="0.01"
-            value={formData.abi}
-            onChange={(event) => handleFieldChange('abi', event.target.value)}
-          />
-        </label>
+            <label>
+              Profit / Loss
+              <input
+                type="number"
+                step="0.01"
+                value={formData.profit}
+                onChange={(event) =>
+                  handleFieldChange('profit', event.target.value)
+                }
+              />
+            </label>
 
-        <label>
-          Learning hours
-          <input
-            type="number"
-            step="0.5"
-            value={formData.learningHours}
-            onChange={(event) =>
-              handleFieldChange('learningHours', event.target.value)
-            }
-          />
-        </label>
+            <label>
+              ABI
+              <input
+                type="number"
+                step="0.01"
+                value={formData.abi}
+                onChange={(event) => handleFieldChange('abi', event.target.value)}
+              />
+            </label>
+          </div>
+        </div>
 
-        <label>
-          Sport hours
-          <input
-            type="number"
-            step="0.5"
-            value={formData.sportHours}
-            onChange={(event) =>
-              handleFieldChange('sportHours', event.target.value)
-            }
-          />
-        </label>
+        <div className="entry-form-section">
+          <h3>Off-table</h3>
 
-        <label>
-          Comment
-          <textarea
-            rows={4}
-            value={formData.comment}
-            onChange={(event) =>
-              handleFieldChange('comment', event.target.value)
-            }
-          />
-        </label>
+          <div className="entry-form-grid">
+            <label>
+              Learning hours
+              <input
+                type="number"
+                step="0.5"
+                value={formData.learningHours}
+                onChange={(event) =>
+                  handleFieldChange('learningHours', event.target.value)
+                }
+              />
+            </label>
+
+            <label>
+              Sport hours
+              <input
+                type="number"
+                step="0.5"
+                value={formData.sportHours}
+                onChange={(event) =>
+                  handleFieldChange('sportHours', event.target.value)
+                }
+              />
+            </label>
+          </div>
+        </div>
+
+        <div className="entry-form-section">
+          <h3>Notes</h3>
+
+          <label>
+            Comment
+            <textarea
+              rows={4}
+              value={formData.comment}
+              onChange={(event) =>
+                handleFieldChange('comment', event.target.value)
+              }
+            />
+          </label>
+        </div>
 
         {errorMessage && <p className="entry-error">{errorMessage}</p>}
 
-        <div className="form-actions">
-          <button type="submit" disabled={isSaving || isLoading}>
-            {isSaving ? 'Saving...' : 'Save day'}
+        <div className="entry-modal-footer">
+          {isSaved && <span className="save-status">Saved</span>}
+
+          <button className="entry-cancel-button" type="button" onClick={onClose}>
+            Cancel
           </button>
 
-          {isSaved && <span className="save-status">Saved</span>}
+          <button className="entry-save-button" type="submit" disabled={isSaving || isLoading}>
+            {isSaving ? 'Saving...' : 'Save Entry'}
+          </button>
         </div>
       </form>
     </section>

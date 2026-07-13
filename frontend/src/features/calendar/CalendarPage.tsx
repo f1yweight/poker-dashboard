@@ -177,14 +177,6 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
         {isEntryModalOpen && (
           <div className="modal-backdrop">
             <div className="entry-modal">
-              <button
-                className="modal-close-button"
-                type="button"
-                onClick={handleCloseEntryModal}
-              >
-                Close
-              </button>
-
               <DailyEntryForm
                 key={`${selectedEntryDate}-${selectedEntry ? 'loaded' : 'empty'}`}
                 currentMonth={currentMonth}
@@ -195,6 +187,7 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
                 isLoading={isLoadingEntry}
                 errorMessage={saveErrorMessage ?? loadErrorMessage}
                 onSave={handleSaveEntry}
+                onClose={handleCloseEntryModal}
               />
             </div>
           </div>
