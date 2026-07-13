@@ -1,4 +1,14 @@
-import { BookOpen, Clock, Hand } from 'lucide-react';
+import { BookOpen, Dumbbell, Trophy } from 'lucide-react';
+
+type MonthlySummary = {
+  totalMttPlayed: number;
+  totalLearningHours: number;
+  totalSportHours: number;
+};
+
+type MonthlyObjectivesPanelProps = {
+  summary: MonthlySummary;
+};
 
 type Objective = {
   label: string;
@@ -8,29 +18,17 @@ type Objective = {
   icon: React.ElementType;
 };
 
-const objectives: Objective[] = [
-  {
-    label: 'MTT hours',
-    value: 0,
-    target: 80,
-    displayValue: '0 / 80',
-    icon: Clock,
-  },
-  {
-    label: 'Hands played',
-    value: 0,
-    target: 20000,
-    displayValue: '0 / 20k',
-    icon: Hand,
-  },
-  {
-    label: 'Learning hours',
-    value: 0,
-    target: 15,
-    displayValue: '0 / 15',
-    icon: BookOpen,
-  },
-];
+function formatNumber(value: number) {
+  return new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
+function formatInteger(value: number) {
+  return new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 
 function getProgressPercent(value: number, target: number) {
   if (target === 0) {
@@ -40,7 +38,31 @@ function getProgressPercent(value: number, target: number) {
   return Math.min((value / target) * 100, 100);
 }
 
-function MonthlyObjectivesPanel() {
+function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
+  const objectives: Objective[] = [
+    {
+      label: 'MTT played',
+      value: summary.totalMttPlayed,
+      target: 1000,
+      displayValue: `${formatInteger(summary.totalMttPlayed)} / 1k`,
+      icon: Trophy,
+    },
+    {
+      label: 'Learning hours',
+      value: summary.totalLearningHours,
+      target: 20,
+      displayValue: `${formatNumber(summary.totalLearningHours)} / 20`,
+      icon: BookOpen,
+    },
+    {
+      label: 'Sport hours',
+      value: summary.totalSportHours,
+      target: 12,
+      displayValue: `${formatNumber(summary.totalSportHours)} / 12`,
+      icon: Dumbbell,
+    },
+  ];
+
   return (
     <section className="monthly-objectives-panel">
       <h2>Monthly objectives</h2>

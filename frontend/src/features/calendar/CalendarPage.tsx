@@ -68,7 +68,7 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
   const selectedEntryDate = formatDateForApi(selectedDate);
   const selectedEntry = entriesByDate[selectedEntryDate];
   const isSelectedEntrySaved = lastSavedEntryDate === selectedEntryDate;
-  const monthlySummary = calculateMonthlySummary(entriesByDate);
+  const summary = calculateMonthlySummary(entriesByDate);
 
   const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
 
@@ -152,7 +152,7 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
 
       <main className="dashboard-layout">
         <div className="dashboard-grid">
-          <MonthlyObjectivesPanel />
+          <MonthlyObjectivesPanel summary={summary} />
 
           <section className="calendar-section">
             <MonthNavigation
@@ -172,7 +172,7 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
           <ProfitTrajectoryPanel entriesByDate={entriesByDate} />
         </div>
 
-        <MonthlySummaryPanel summary={monthlySummary} />
+        <MonthlySummaryPanel summary={summary} />
 
         {isEntryModalOpen && (
           <div className="modal-backdrop">
