@@ -1,4 +1,13 @@
-import { BookOpen, Dumbbell, Trophy } from 'lucide-react';
+import { useEffect, useState, type ElementType, type FormEvent } from 'react';
+import {
+  BookOpen,
+  Dumbbell,
+  Plus,
+  Settings,
+  SlidersHorizontal,
+  Trophy,
+  X,
+} from 'lucide-react';
 
 type MonthlySummary = {
   totalMttPlayed: number;
@@ -10,13 +19,45 @@ type MonthlyObjectivesPanelProps = {
   summary: MonthlySummary;
 };
 
+type MonthlyObjectiveTargets = {
+  mttPlayed: number;
+  learningHours: number;
+  sportHours: number;
+};
+
 type Objective = {
+  key: keyof MonthlyObjectiveTargets;
   label: string;
   value: number;
   target: number;
   displayValue: string;
-  icon: React.ElementType;
+  icon: ElementType;
 };
+
+const defaultTargets: MonthlyObjectiveTargets = {
+  mttPlayed: 1000,
+  learningHours: 20,
+  sportHours: 12,
+};
+
+const targetStorageKey = 'poker-dashboard-monthly-objective-targets';
+
+function loadTargets(): MonthlyObjectiveTargets {
+  const storedTargets = localStorage.getItem(targetStorageKey);
+
+  if (!storedTargets) {
+    return defaultTargets;
+  }
+
+  try {
+    return {
+      ...defaultTargets,
+      ...JSON.parse(storedTargets),
+    };
+  } catch {
+    return defaultTargets;
+  }
+}
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en-US', {
@@ -30,6 +71,16 @@ function formatInteger(value: number) {
   }).format(value);
 }
 
+function toTargetValue(value: string) {
+  const parsedValue = Number(value);
+
+  if (Number.isNaN(parsedValue) || parsedValue < 0) {
+    return 0;
+  }
+
+  return parsedValue;
+}
+
 function getProgressPercent(value: number, target: number) {
   if (target === 0) {
     return 0;
@@ -39,33 +90,111 @@ function getProgressPercent(value: number, target: number) {
 }
 
 function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
+  const [targets, setTargets] = useState<MonthlyObjectiveTargets>(loadTargets);
+  const [draftTargets, setDraftTargets] =
+    useState<MonthlyObjectiveTargets>(targets);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   const objectives: Objective[] = [
     {
+      key: 'mttPlayed',
       label: 'MTT played',
       value: summary.totalMttPlayed,
-      target: 1000,
-      displayValue: `${formatInteger(summary.totalMttPlayed)} / 1k`,
+      target: targets.mttPlayed,
+      displayValue: `${formatInteger(summary.totalMttPlayed)} / ${formatInteger(targets.mttPlayed)}`,
       icon: Trophy,
     },
     {
+      key: 'learningHours',
       label: 'Learning hours',
       value: summary.totalLearningHours,
-      target: 20,
-      displayValue: `${formatNumber(summary.totalLearningHours)} / 20`,
+      target: targets.learningHours,
+      displayValue: `${formatNumber(summary.totalLearningHours)} / ${formatNumber(targets.learningHours)}`,
       icon: BookOpen,
     },
     {
+      key: 'sportHours',
       label: 'Sport hours',
       value: summary.totalSportHours,
-      target: 12,
-      displayValue: `${formatNumber(summary.totalSportHours)} / 12`,
+      target: targets.sportHours,
+      displayValue: `${formatNumber(summary.totalSportHours)} / ${formatNumber(targets.sportHours)}`,
       icon: Dumbbell,
     },
   ];
 
+  useEffect(() => {
+    if (!isEditModalOpen) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsEditModalOpen(false);
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isEditModalOpen]);
+
+  function handleOpenEditModal() {
+    setDraftTargets(targets);
+    setIsActionsOpen(false);
+    setIsEditModalOpen(true);
+  }
+
+  function handleDraftTargetChange(
+    targetKey: keyof MonthlyObjectiveTargets,
+    value: string,
+  ) {
+    setDraftTargets({
+      ...draftTargets,
+      [targetKey]: toTargetValue(value),
+    });
+  }
+
+  function handleSubmitTargets(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    setTargets(draftTargets);
+    localStorage.setItem(targetStorageKey, JSON.stringify(draftTargets));
+    setIsEditModalOpen(false);
+  }
+
   return (
     <section className="monthly-objectives-panel">
-      <h2>Monthly objectives</h2>
+      <div className="monthly-objectives-header">
+        <h2>Monthly objectives</h2>
+
+        <div className="objectives-actions">
+          <button
+            className="objectives-settings-button"
+            type="button"
+            onClick={() => setIsActionsOpen(!isActionsOpen)}
+            aria-label="Open monthly objectives actions"
+          >
+            <Settings size={16} strokeWidth={2.4} />
+          </button>
+
+          {isActionsOpen && (
+            <div className="objectives-dropdown">
+              <button type="button" disabled>
+                <Plus size={15} strokeWidth={2.4} />
+                Add custom goal
+              </button>
+
+              <button type="button" onClick={handleOpenEditModal}>
+                <SlidersHorizontal size={15} strokeWidth={2.4} />
+                Edit goals
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
 
       {objectives.map((objective) => {
         const Icon = objective.icon;
@@ -75,7 +204,7 @@ function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
         );
 
         return (
-          <article className="objective-card" key={objective.label}>
+          <article className="objective-card" key={objective.key}>
             <div className="objective-card-header">
               <Icon size={16} strokeWidth={2.4} />
               <span>{objective.label}</span>
@@ -95,6 +224,97 @@ function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
           </article>
         );
       })}
+
+      {isEditModalOpen && (
+        <div
+          className="entry-modal-backdrop"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setIsEditModalOpen(false);
+            }
+          }}
+        >
+          <section
+            className="objectives-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="objectives-modal-header">
+              <div>
+                <h2>Monthly objectives</h2>
+                <p>
+                  Goals <span>›</span> <strong>Edit targets</strong>
+                </p>
+              </div>
+
+              <button
+                className="entry-modal-close"
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+              >
+                <X size={18} strokeWidth={2.4} />
+              </button>
+            </div>
+
+            <form className="objectives-form" onSubmit={handleSubmitTargets}>
+              <label>
+                MTT played target
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={draftTargets.mttPlayed}
+                  onChange={(event) =>
+                    handleDraftTargetChange('mttPlayed', event.target.value)
+                  }
+                />
+              </label>
+
+              <label>
+                Learning hours target
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={draftTargets.learningHours}
+                  onChange={(event) =>
+                    handleDraftTargetChange(
+                      'learningHours',
+                      event.target.value,
+                    )
+                  }
+                />
+              </label>
+
+              <label>
+                Sport hours target
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={draftTargets.sportHours}
+                  onChange={(event) =>
+                    handleDraftTargetChange('sportHours', event.target.value)
+                  }
+                />
+              </label>
+
+              <div className="entry-modal-footer">
+                <button
+                  className="entry-cancel-button"
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                >
+                  Cancel
+                </button>
+
+                <button className="entry-save-button" type="submit">
+                  Save goals
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </section>
   );
 }
