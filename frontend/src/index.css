@@ -38,13 +38,15 @@ button {
 }
 
 .dashboard-layout {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 24px;
+  display: block;
   padding: 32px;
 }
 
-.calendar-section,
+.calendar-section {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
 .entry-section {
   background: #ffffff;
   border: 1px solid #d9e2ec;
@@ -262,4 +264,36 @@ button {
   margin: 0;
   color: #52606d;
   font-weight: 600;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(15 23 42 / 0.55);
+}
+
+.entry-modal {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+}
+
+.entry-modal .entry-section {
+  margin: 0;
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: #e2e8f0;
+  color: #1f2933;
 }

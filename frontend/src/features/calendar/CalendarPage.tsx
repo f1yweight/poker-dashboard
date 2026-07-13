@@ -65,6 +65,8 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
   const selectedEntry = entriesByDate[selectedEntryDate];
   const isSelectedEntrySaved = lastSavedEntryDate === selectedEntryDate;
 
+  const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
+
   useEffect(() => {
     async function loadMonthEntries() {
       setIsLoadingEntry(true);
@@ -130,6 +132,15 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
     }
   }
 
+  function handleSelectDay(day: number) {
+    setSelectedDay(day);
+    setIsEntryModalOpen(true);
+  }
+
+  function handleCloseEntryModal() {
+    setIsEntryModalOpen(false);
+  }
+
   return (
     <div className="app">
       <AppHeader onLogout={onLogout} />
@@ -146,21 +157,36 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
             currentMonth={currentMonth}
             selectedDay={selectedDay}
             entriesByDate={entriesByDate}
-            onSelectDay={setSelectedDay}
+            onSelectDay={handleSelectDay}
           />
         </section>
 
-        <DailyEntryForm
-          key={`${selectedEntryDate}-${selectedEntry ? 'loaded' : 'empty'}`}
-          currentMonth={currentMonth}
-          selectedDay={selectedDay}
-          selectedEntry={selectedEntry}
-          isSaved={isSelectedEntrySaved}
-          isSaving={isSavingEntry}
-          isLoading={isLoadingEntry}
-          errorMessage={saveErrorMessage ?? loadErrorMessage}
-          onSave={handleSaveEntry}
-        />
+        {isEntryModalOpen && (
+          <div className="modal-backdrop">
+            <div className="entry-modal">
+              <button
+                className="modal-close-button"
+                type="button"
+                onClick={handleCloseEntryModal}
+              >
+                Close
+              </button>
+
+              <DailyEntryForm
+                key={`${selectedEntryDate}-${selectedEntry ? 'loaded' : 'empty'}`}
+                currentMonth={currentMonth}
+                selectedDay={selectedDay}
+                selectedEntry={selectedEntry}
+                isSaved={isSelectedEntrySaved}
+                isSaving={isSavingEntry}
+                isLoading={isLoadingEntry}
+                errorMessage={saveErrorMessage ?? loadErrorMessage}
+                onSave={handleSaveEntry}
+              />
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );
