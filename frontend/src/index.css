@@ -297,3 +297,47 @@ button {
   background: #e2e8f0;
   color: #1f2933;
 }
+
+.monthly-summary-section {
+  max-width: 960px;
+  margin: 24px auto 0;
+  background: #ffffff;
+  border: 1px solid #d9e2ec;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.monthly-summary-section h2 {
+  margin: 0 0 16px;
+  font-size: 20px;
+}
+
+.monthly-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.summary-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #d9e2ec;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f8fafc;
+}
+
+.summary-card span {
+  color: #52606d;
+  font-weight: 600;
+}
+
+.summary-card strong {
+  font-size: 24px;
+}
+
+@media (max-width: 900px) {
+  .monthly-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}

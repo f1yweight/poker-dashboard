@@ -15,6 +15,8 @@ import DailyEntryForm from '../daily-entry/DailyEntryForm';
 import type { DailyEntryPayload } from '../daily-entry/dailyEntryTypes';
 import MonthCalendar from './MonthCalendar';
 import MonthNavigation from './MonthNavigation';
+import MonthlySummaryPanel from './MonthlySummaryPanel';
+import { calculateMonthlySummary } from './monthlySummaryUtils';
 
 type CalendarPageProps = {
   onLogout: () => void;
@@ -64,6 +66,7 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
   const selectedEntryDate = formatDateForApi(selectedDate);
   const selectedEntry = entriesByDate[selectedEntryDate];
   const isSelectedEntrySaved = lastSavedEntryDate === selectedEntryDate;
+  const monthlySummary = calculateMonthlySummary(entriesByDate);
 
   const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
 
@@ -160,6 +163,8 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
             onSelectDay={handleSelectDay}
           />
         </section>
+
+        <MonthlySummaryPanel summary={monthlySummary} />
 
         {isEntryModalOpen && (
           <div className="modal-backdrop">
