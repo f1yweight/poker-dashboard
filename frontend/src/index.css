@@ -181,8 +181,8 @@ button {
 
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 7px;
 }
 
 .weekday {
@@ -193,12 +193,28 @@ button {
 }
 
 .calendar-day {
-  min-height: 64px;
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 0.72;
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  background: #101216;
-  color: var(--color-text-muted);
-  position: relative;
+  padding: 0;
+  background: #101419;
+  color: var(--color-muted);
+  font: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  appearance: none;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.calendar-day:not(.empty):hover {
+  border-color: rgb(245 183 0 / 0.65);
+  background: rgb(245 183 0 / 0.08);
 }
 
 .calendar-day:hover {
@@ -206,21 +222,31 @@ button {
 }
 
 .calendar-day.empty {
-  background: transparent;
-  border-color: transparent;
-  cursor: default;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .calendar-day.selected {
-  border-color: var(--color-accent);
-  background: #181306;
-  color: var(--color-text);
+  border-color: #f5b700;
+  background: rgb(245 183 0 / 0.12);
+  color: #ffd166;
+}
+
+.calendar-day.selected .calendar-day-number {
+  color: #ffffff;
+}
+
+.calendar-day.empty:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .calendar-day-number {
   position: absolute;
   top: 12px;
   left: 12px;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .calendar-day-dot {
@@ -239,8 +265,10 @@ button {
   right: 10px;
   bottom: 10px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 900;
   line-height: 1;
+  letter-spacing: 0;
+  text-shadow: 0 0 10px currentColor;
 }
 
 .entry-section h2 {
@@ -771,6 +799,19 @@ button {
 
 .objective-card-header svg {
   color: #f5b700;
+}
+
+.objective-progress {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #243044;
+}
+
+.objective-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f5b700, #ffd166);
 }
 
 .profit-trajectory-panel {
