@@ -144,11 +144,23 @@ button {
 }
 
 .calendar-day.has-entry {
+  border-color: #94a3b8;
+  background: #f1f5f9;
+}
+
+.calendar-day.has-positive-entry {
   border-color: #16a34a;
   background: #dcfce7;
 }
 
-.calendar-day.has-entry.selected {
+.calendar-day.has-negative-entry {
+  border-color: #dc2626;
+  background: #fee2e2;
+}
+
+.calendar-day.has-entry.selected,
+.calendar-day.has-positive-entry.selected,
+.calendar-day.has-negative-entry.selected {
   border-color: #2563eb;
   background: #bfdbfe;
 }

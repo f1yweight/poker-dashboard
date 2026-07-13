@@ -1,19 +1,21 @@
 import { formatDateForApi } from '../../shared/date/dateUtils';
 import { getCalendarDays } from './calendarUtils';
 
+import type { DailyEntryPayload } from '../daily-entry/dailyEntryTypes';
+
 const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 type MonthCalendarProps = {
   currentMonth: Date;
   selectedDay: number;
-  entryDates: string[];
+  entriesByDate: Record<string, DailyEntryPayload>;
   onSelectDay: (day: number) => void;
 };
 
 function MonthCalendar({
   currentMonth,
   selectedDay,
-  entryDates,
+  entriesByDate,
   onSelectDay,
 }: MonthCalendarProps) {
   const calendarDays = getCalendarDays(
@@ -47,14 +49,26 @@ function MonthCalendar({
         );
 
         const dayDateKey = formatDateForApi(dayDate);
-        const hasEntry = entryDates.includes(dayDateKey);
+        const entry = entriesByDate[dayDateKey];
+
+        function getEntryClassName(entry: DailyEntryPayload | undefined) {
+          if (!entry) {
+            return '';
+          }
+
+          if (entry.profit === null || entry.profit === 0) {
+            return 'has-entry';
+          }
+
+          return entry.profit > 0 ? 'has-positive-entry' : 'has-negative-entry';
+        }
 
         return (
           <button
             className={[
               'calendar-day',
               day === selectedDay ? 'selected' : '',
-              hasEntry ? 'has-entry' : '',
+              getEntryClassName(entry),
             ]
               .filter(Boolean)
               .join(' ')}

@@ -145,7 +145,7 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
           <MonthCalendar
             currentMonth={currentMonth}
             selectedDay={selectedDay}
-            entryDates={Object.keys(entriesByDate)}
+            entriesByDate={entriesByDate}
             onSelectDay={setSelectedDay}
           />
         </section>
