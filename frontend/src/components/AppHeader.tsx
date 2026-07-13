@@ -6,7 +6,7 @@ function AppHeader({ onLogout }: AppHeaderProps) {
   return (
     <header className="app-header">
       <h1>Poker Dashboard</h1>
-      <button type="button" onClick={onLogout}>
+      <button className="logout-button" type="button" onClick={onLogout}>
         Logout
       </button>
     </header>

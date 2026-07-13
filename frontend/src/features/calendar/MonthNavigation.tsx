@@ -18,14 +18,24 @@ function MonthNavigation({
 
   return (
     <div className="month-header">
-      <button type="button" onClick={onPreviousMonth}>
-        Previous
+      <button
+        className="month-nav-button"
+        type="button"
+        onClick={onPreviousMonth}
+        aria-label="Previous month"
+      >
+        ‹
       </button>
 
       <h2>{monthLabel}</h2>
 
-      <button type="button" onClick={onNextMonth}>
-        Next
+      <button
+        className="month-nav-button"
+        type="button"
+        onClick={onNextMonth}
+        aria-label="Next month"
+      >
+        ›
       </button>
     </div>
   );

@@ -17,6 +17,8 @@ import MonthCalendar from './MonthCalendar';
 import MonthNavigation from './MonthNavigation';
 import MonthlySummaryPanel from './MonthlySummaryPanel';
 import { calculateMonthlySummary } from './monthlySummaryUtils';
+import MonthlyObjectivesPanel from './MonthlyObjectivesPanel';
+import ProfitTrajectoryPanel from './ProfitTrajectoryPanel';
 
 type CalendarPageProps = {
   onLogout: () => void;
@@ -149,20 +151,26 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
       <AppHeader onLogout={onLogout} />
 
       <main className="dashboard-layout">
-        <section className="calendar-section">
-          <MonthNavigation
-            currentMonth={currentMonth}
-            onPreviousMonth={handlePreviousMonth}
-            onNextMonth={handleNextMonth}
-          />
+        <div className="dashboard-grid">
+          <MonthlyObjectivesPanel />
 
-          <MonthCalendar
-            currentMonth={currentMonth}
-            selectedDay={selectedDay}
-            entriesByDate={entriesByDate}
-            onSelectDay={handleSelectDay}
-          />
-        </section>
+          <section className="calendar-section">
+            <MonthNavigation
+              currentMonth={currentMonth}
+              onPreviousMonth={handlePreviousMonth}
+              onNextMonth={handleNextMonth}
+            />
+
+            <MonthCalendar
+              currentMonth={currentMonth}
+              selectedDay={selectedDay}
+              entriesByDate={entriesByDate}
+              onSelectDay={handleSelectDay}
+            />
+          </section>
+
+          <ProfitTrajectoryPanel />
+        </div>
 
         <MonthlySummaryPanel summary={monthlySummary} />
 
