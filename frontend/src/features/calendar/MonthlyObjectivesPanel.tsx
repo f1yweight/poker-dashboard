@@ -1,4 +1,10 @@
-import { useEffect, useState, type ElementType, type FormEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ElementType,
+  type FormEvent,
+} from 'react';
 import {
   BookOpen,
   Dumbbell,
@@ -95,6 +101,7 @@ function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
     useState<MonthlyObjectiveTargets>(targets);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const actionsRef = useRef<HTMLDivElement>(null);
 
   const objectives: Objective[] = [
     {
@@ -124,13 +131,14 @@ function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
   ];
 
   useEffect(() => {
-    if (!isEditModalOpen) {
+    if (!isEditModalOpen && !isActionsOpen) {
       return;
     }
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setIsEditModalOpen(false);
+        setIsActionsOpen(false);
       }
     }
 
@@ -139,7 +147,28 @@ function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isEditModalOpen]);
+  }, [isEditModalOpen, isActionsOpen]);
+
+  useEffect(() => {
+    if (!isActionsOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (
+        actionsRef.current &&
+        !actionsRef.current.contains(event.target as Node)
+      ) {
+        setIsActionsOpen(false);
+      }
+    }
+
+    window.addEventListener('pointerdown', handlePointerDown);
+
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, [isActionsOpen]);
 
   function handleOpenEditModal() {
     setDraftTargets(targets);
@@ -170,7 +199,7 @@ function MonthlyObjectivesPanel({ summary }: MonthlyObjectivesPanelProps) {
       <div className="monthly-objectives-header">
         <h2>Monthly objectives</h2>
 
-        <div className="objectives-actions">
+        <div className="objectives-actions" ref={actionsRef}>
           <button
             className="objectives-settings-button"
             type="button"
