@@ -55,6 +55,7 @@ function LoginPage({ onLogin }: LoginPageProps) {
     <main className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
         <h1>Login</h1>
+        <p className="auth-subtitle">Welcome back to Poker Dashboard</p>
 
         <label>
           Email

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { formatDateForApi } from '../../shared/date/dateUtils';
 import type {
@@ -89,6 +89,20 @@ function DailyEntryForm({
     return emptyFormData;
   });
 
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
+
   function handleFieldChange(field: keyof DailyEntryFormData, value: string) {
     setFormData({
       ...formData,
@@ -116,159 +130,171 @@ function DailyEntryForm({
   }
 
   return (
-    <section className="entry-section">
-      <div className="entry-modal-header">
-        <div>
-          <h2>{selectedDateLabel}</h2>
-          <p>
-            Log Session <span>›</span> <strong>Daily Entry</strong>
-          </p>
-        </div>
+    <div
+      className="entry-modal-backdrop"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+        <section
+            className="entry-section"
+            onClick={(event) => event.stopPropagation()}
+          >
+          <div className="entry-modal-header">
+            <div>
+              <h2>{selectedDateLabel}</h2>
+              <p>
+                Log Session <span>›</span> <strong>Daily Entry</strong>
+              </p>
+            </div>
 
-        <button className="entry-modal-close" type="button" onClick={onClose}>
-          ×
-        </button>
-      </div>
-
-      {isLoading && <p className="entry-loading">Loading day...</p>}
-
-      <form className="entry-form" onSubmit={handleSubmit}>
-        <div className="entry-form-section">
-          <h3>Poker session</h3>
-
-          <div className="entry-form-grid">
-            <label>
-              MTT hours
-              <input
-                type="number"
-                step="0.5"
-                value={formData.mttHours}
-                onChange={(event) =>
-                  handleFieldChange('mttHours', event.target.value)
-                }
-              />
-            </label>
-
-            <label>
-              MTT played
-              <input
-                type="number"
-                step="1"
-                value={formData.mttPlayed}
-                onChange={(event) =>
-                  handleFieldChange('mttPlayed', event.target.value)
-                }
-              />
-            </label>
-
-            <label>
-              Hands played
-              <input
-                type="number"
-                step="1"
-                value={formData.handsPlayed}
-                onChange={(event) =>
-                  handleFieldChange('handsPlayed', event.target.value)
-                }
-              />
-            </label>
-
-            <label>
-              EV BB/100
-              <input
-                type="number"
-                step="0.01"
-                value={formData.evBb100}
-                onChange={(event) =>
-                  handleFieldChange('evBb100', event.target.value)
-                }
-              />
-            </label>
-
-            <label>
-              Profit / Loss
-              <input
-                type="number"
-                step="0.01"
-                value={formData.profit}
-                onChange={(event) =>
-                  handleFieldChange('profit', event.target.value)
-                }
-              />
-            </label>
-
-            <label>
-              ABI
-              <input
-                type="number"
-                step="0.01"
-                value={formData.abi}
-                onChange={(event) => handleFieldChange('abi', event.target.value)}
-              />
-            </label>
+            <button className="entry-modal-close" type="button" onClick={onClose}>
+              ×
+            </button>
           </div>
-        </div>
 
-        <div className="entry-form-section">
-          <h3>Off-table</h3>
+          {isLoading && <p className="entry-loading">Loading day...</p>}
 
-          <div className="entry-form-grid">
-            <label>
-              Learning hours
-              <input
-                type="number"
-                step="0.5"
-                value={formData.learningHours}
-                onChange={(event) =>
-                  handleFieldChange('learningHours', event.target.value)
-                }
-              />
-            </label>
+          <form className="entry-form" onSubmit={handleSubmit}>
+            <div className="entry-form-section">
+              <h3>Poker session</h3>
 
-            <label>
-              Sport hours
-              <input
-                type="number"
-                step="0.5"
-                value={formData.sportHours}
-                onChange={(event) =>
-                  handleFieldChange('sportHours', event.target.value)
-                }
-              />
-            </label>
-          </div>
-        </div>
+              <div className="entry-form-grid">
+                <label>
+                  MTT hours
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={formData.mttHours}
+                    onChange={(event) =>
+                      handleFieldChange('mttHours', event.target.value)
+                    }
+                  />
+                </label>
 
-        <div className="entry-form-section">
-          <h3>Notes</h3>
+                <label>
+                  MTT played
+                  <input
+                    type="number"
+                    step="1"
+                    value={formData.mttPlayed}
+                    onChange={(event) =>
+                      handleFieldChange('mttPlayed', event.target.value)
+                    }
+                  />
+                </label>
 
-          <label>
-            Comment
-            <textarea
-              rows={4}
-              value={formData.comment}
-              onChange={(event) =>
-                handleFieldChange('comment', event.target.value)
-              }
-            />
-          </label>
-        </div>
+                <label>
+                  Hands played
+                  <input
+                    type="number"
+                    step="1"
+                    value={formData.handsPlayed}
+                    onChange={(event) =>
+                      handleFieldChange('handsPlayed', event.target.value)
+                    }
+                  />
+                </label>
 
-        {errorMessage && <p className="entry-error">{errorMessage}</p>}
+                <label>
+                  EV BB/100
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.evBb100}
+                    onChange={(event) =>
+                      handleFieldChange('evBb100', event.target.value)
+                    }
+                  />
+                </label>
 
-        <div className="entry-modal-footer">
-          {isSaved && <span className="save-status">Saved</span>}
+                <label>
+                  Profit / Loss
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.profit}
+                    onChange={(event) =>
+                      handleFieldChange('profit', event.target.value)
+                    }
+                  />
+                </label>
 
-          <button className="entry-cancel-button" type="button" onClick={onClose}>
-            Cancel
-          </button>
+                <label>
+                  ABI
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.abi}
+                    onChange={(event) => handleFieldChange('abi', event.target.value)}
+                  />
+                </label>
+              </div>
+            </div>
 
-          <button className="entry-save-button" type="submit" disabled={isSaving || isLoading}>
-            {isSaving ? 'Saving...' : 'Save Entry'}
-          </button>
-        </div>
-      </form>
-    </section>
+            <div className="entry-form-section">
+              <h3>Off-table</h3>
+
+              <div className="entry-form-grid">
+                <label>
+                  Learning hours
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={formData.learningHours}
+                    onChange={(event) =>
+                      handleFieldChange('learningHours', event.target.value)
+                    }
+                  />
+                </label>
+
+                <label>
+                  Sport hours
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={formData.sportHours}
+                    onChange={(event) =>
+                      handleFieldChange('sportHours', event.target.value)
+                    }
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div className="entry-form-section">
+              <h3>Notes</h3>
+
+              <label>
+                Comment
+                <textarea
+                  rows={4}
+                  value={formData.comment}
+                  onChange={(event) =>
+                    handleFieldChange('comment', event.target.value)
+                  }
+                />
+              </label>
+            </div>
+
+            {errorMessage && <p className="entry-error">{errorMessage}</p>}
+
+            <div className="entry-modal-footer">
+              {isSaved && <span className="save-status">Saved</span>}
+
+              <button className="entry-cancel-button" type="button" onClick={onClose}>
+                Cancel
+              </button>
+
+              <button className="entry-save-button" type="submit" disabled={isSaving || isLoading}>
+                {isSaving ? 'Saving...' : 'Save Entry'}
+              </button>
+            </div>
+          </form>
+        </section>
+    </div>
   );
 }
 

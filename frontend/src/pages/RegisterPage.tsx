@@ -48,6 +48,7 @@ function RegisterPage() {
     <main className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
         <h1>Register</h1>
+        <p className="auth-subtitle">Create your poker tracking account</p>
 
         <label>
           Username

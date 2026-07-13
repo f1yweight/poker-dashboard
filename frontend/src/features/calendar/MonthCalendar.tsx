@@ -76,7 +76,16 @@ function MonthCalendar({
             type="button"
             onClick={() => onSelectDay(day)}
           >
-            {day}
+            <span className="calendar-day-number">{day}</span>
+
+            {entry && <span className="calendar-day-dot" />}
+
+            {entry?.profit !== null && entry?.profit !== undefined && (
+              <span className="calendar-day-profit">
+                {entry.profit > 0 ? '+' : ''}
+                {entry.profit}
+              </span>
+            )}
           </button>
         );
       })}
