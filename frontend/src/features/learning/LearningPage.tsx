@@ -19,11 +19,14 @@ import DeleteLearningResourceDialog from './DeleteLearningResourceDialog';
 import type {
   LearningResource,
   LearningResourcePayload,
+  LearningResourceStatus,
 } from './learningTypes';
 
 type LearningPageProps = {
   onLogout: () => void;
 };
+
+type LearningStatusFilter = 'ALL' | LearningResourceStatus;
 
 function getStatusLabel(status: LearningResource['status']) {
   if (status === 'TO_WATCH') {
@@ -36,6 +39,28 @@ function getStatusLabel(status: LearningResource['status']) {
 
   return 'Done';
 }
+
+const statusFilters: Array<{
+  label: string;
+  value: LearningStatusFilter;
+}> = [
+  {
+    label: 'All',
+    value: 'ALL',
+  },
+  {
+    label: 'To watch',
+    value: 'TO_WATCH',
+  },
+  {
+    label: 'In progress',
+    value: 'IN_PROGRESS',
+  },
+  {
+    label: 'Done',
+    value: 'DONE',
+  },
+];
 
 function LearningPage({ onLogout }: LearningPageProps) {
   const [resources, setResources] = useState<LearningResource[]>([]);
@@ -53,13 +78,18 @@ function LearningPage({ onLogout }: LearningPageProps) {
     useState<LearningResource | null>(null);
   const [isDeletingResource, setIsDeletingResource] = useState(false);
 
+  const [statusFilter, setStatusFilter] =
+    useState<LearningStatusFilter>('ALL');
+
   useEffect(() => {
     async function loadResources() {
       setIsLoading(true);
       setErrorMessage(null);
 
       try {
-        const response = await getLearningResources();
+        const response = await getLearningResources(
+          statusFilter === 'ALL' ? undefined : statusFilter,
+        );
         setResources(response);
       } catch {
         setErrorMessage('Could not load learning resources.');
@@ -69,7 +99,7 @@ function LearningPage({ onLogout }: LearningPageProps) {
     }
 
     void loadResources();
-  }, []);
+  }, [statusFilter]);
 
   function closeResourceModal() {
     setIsCreateModalOpen(false);
@@ -84,7 +114,10 @@ function LearningPage({ onLogout }: LearningPageProps) {
     try {
       const createdResource = await createLearningResource(payload);
 
-      setResources([createdResource, ...resources]);
+      if (statusFilter === 'ALL' || createdResource.status === statusFilter) {
+        setResources([createdResource, ...resources]);
+      }
+
       closeResourceModal();
     } catch {
       setSaveErrorMessage('Could not save learning resource.');
@@ -107,11 +140,17 @@ function LearningPage({ onLogout }: LearningPageProps) {
         payload,
       );
 
-      setResources(
-        resources.map((resource) =>
-          resource.id === updatedResource.id ? updatedResource : resource,
-        ),
-      );
+      if (statusFilter !== 'ALL' && updatedResource.status !== statusFilter) {
+        setResources(
+          resources.filter((resource) => resource.id !== updatedResource.id),
+        );
+      } else {
+        setResources(
+          resources.map((resource) =>
+            resource.id === updatedResource.id ? updatedResource : resource,
+          ),
+        );
+      }
       closeResourceModal();
     } catch {
       setSaveErrorMessage('Could not update learning resource.');
@@ -164,6 +203,19 @@ function LearningPage({ onLogout }: LearningPageProps) {
               <Plus size={16} strokeWidth={2.6} />
               Add link
             </button>
+          </div>
+
+          <div className="learning-filters" aria-label="Learning resource filters">
+            {statusFilters.map((filter) => (
+              <button
+                className={statusFilter === filter.value ? 'active' : ''}
+                key={filter.value}
+                type="button"
+                onClick={() => setStatusFilter(filter.value)}
+              >
+                {filter.label}
+              </button>
+            ))}
           </div>
 
           {isLoading && <p className="learning-state">Loading resources...</p>}
