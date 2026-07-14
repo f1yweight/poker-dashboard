@@ -9,6 +9,7 @@ import {
 import CalendarPage from '../features/calendar/CalendarPage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
+import LearningPage from '../features/learning/LearningPage';
 
 function AppRouter() {
   const [isAuthenticated, setIsAuthenticated] = useState(() =>
@@ -36,6 +37,17 @@ function AppRouter() {
           element={
             isAuthenticated ? (
               <CalendarPage onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/learning"
+          element={
+            isAuthenticated ? (
+              <LearningPage onLogout={handleLogout} />
             ) : (
               <Navigate to="/login" replace />
             )
