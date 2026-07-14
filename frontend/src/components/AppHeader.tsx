@@ -95,18 +95,23 @@ function AppHeader({ onLogout }: AppHeaderProps) {
                 <BookOpen size={15} strokeWidth={2.4} />
                 Learning library
               </Link>
+
+              <div className="app-user-dropdown-divider" />
+
+                  <button
+                    className="app-user-dropdown-item app-user-dropdown-logout"
+                    type="button"
+                    onClick={() => {
+                      setIsUserMenuOpen(false);
+                      onLogout();
+                    }}
+                  >
+                    <LogOut size={15} strokeWidth={2.4} />
+                    Logout
+                  </button>
             </div>
           )}
         </div>
-
-        <button
-          className="logout-button"
-          type="button"
-          onClick={onLogout}
-          aria-label="Logout"
-        >
-          <LogOut size={17} strokeWidth={2.4} />
-        </button>
       </div>
     </header>
   );
