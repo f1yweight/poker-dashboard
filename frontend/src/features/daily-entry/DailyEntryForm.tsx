@@ -6,6 +6,18 @@ import type {
   DailyEntryPayload,
 } from './dailyEntryTypes';
 
+import {
+  Activity,
+  BookOpen,
+  CircleDollarSign,
+  Dumbbell,
+  FileText,
+  Hand,
+  Timer,
+  Trophy,
+  TrendingUp,
+} from 'lucide-react';
+
 type DailyEntryFormProps = {
   currentMonth: Date;
   selectedDay: number;
@@ -163,7 +175,10 @@ function DailyEntryForm({
 
               <div className="entry-form-grid">
                 <label>
-                  MTT hours
+                  <span className="entry-field-label">
+                      <Timer size={15} strokeWidth={2.4} />
+                      MTT hours
+                  </span>
                   <input
                     type="number"
                     step="0.5"
@@ -175,7 +190,10 @@ function DailyEntryForm({
                 </label>
 
                 <label>
-                  MTT played
+                  <span className="entry-field-label">
+                      <Trophy size={15} strokeWidth={2.4} />
+                      MTT played
+                  </span>
                   <input
                     type="number"
                     step="1"
@@ -187,7 +205,10 @@ function DailyEntryForm({
                 </label>
 
                 <label>
-                  Hands played
+                  <span className="entry-field-label">
+                      <Hand size={15} strokeWidth={2.4} />
+                      Hands played
+                  </span>
                   <input
                     type="number"
                     step="1"
@@ -199,7 +220,10 @@ function DailyEntryForm({
                 </label>
 
                 <label>
-                  EV BB/100
+                  <span className="entry-field-label">
+                      <TrendingUp size={15} strokeWidth={2.4} />
+                      EV BB/100
+                  </span>
                   <input
                     type="number"
                     step="0.01"
@@ -211,7 +235,10 @@ function DailyEntryForm({
                 </label>
 
                 <label>
-                  Profit / Loss
+                  <span className="entry-field-label">
+                      <CircleDollarSign size={15} strokeWidth={2.4} />
+                      Profit / Loss
+                  </span>
                   <input
                     type="number"
                     step="0.01"
@@ -223,7 +250,10 @@ function DailyEntryForm({
                 </label>
 
                 <label>
-                  ABI
+                  <span className="entry-field-label">
+                      <Activity size={15} strokeWidth={2.4} />
+                      ABI
+                  </span>
                   <input
                     type="number"
                     step="0.01"
@@ -239,7 +269,10 @@ function DailyEntryForm({
 
               <div className="entry-form-grid">
                 <label>
-                  Learning hours
+                  <span className="entry-field-label">
+                      <BookOpen size={15} strokeWidth={2.4} />
+                      Learning hours
+                  </span>
                   <input
                     type="number"
                     step="0.5"
@@ -251,7 +284,10 @@ function DailyEntryForm({
                 </label>
 
                 <label>
-                  Sport hours
+                  <span className="entry-field-label">
+                      <Dumbbell size={15} strokeWidth={2.4} />
+                      Sport hours
+                  </span>
                   <input
                     type="number"
                     step="0.5"
@@ -268,7 +304,10 @@ function DailyEntryForm({
               <h3>Notes</h3>
 
               <label>
-                Comment
+                <span className="entry-field-label">
+                    <FileText size={15} strokeWidth={2.4} />
+                    Comment
+                </span>
                 <textarea
                   rows={4}
                   value={formData.comment}

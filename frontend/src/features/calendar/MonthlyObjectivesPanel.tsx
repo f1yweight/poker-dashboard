@@ -360,7 +360,12 @@ function MonthlyObjectivesPanel({
             <strong>{objective.displayValue}</strong>
 
             <div
-              className="objective-progress"
+              className={[
+                'objective-progress',
+                progressPercent >= 100 ? 'completed' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               aria-label={`${objective.label} progress`}
             >
               <div
@@ -429,7 +434,10 @@ function MonthlyObjectivesPanel({
 
             <form className="objectives-form" onSubmit={handleSubmitTargets}>
               <label>
-                MTT played target
+                <span className="objectives-field-label">
+                    <Trophy size={15} strokeWidth={2.4} />
+                    MTT played target
+                </span>
                 <input
                   type="number"
                   min="0"
@@ -445,7 +453,10 @@ function MonthlyObjectivesPanel({
               </label>
 
               <label>
-                Learning hours target
+                <span className="objectives-field-label">
+                    <BookOpen size={15} strokeWidth={2.4} />
+                    Learning hours target
+                </span>
                 <input
                   type="number"
                   min="0"
@@ -461,7 +472,10 @@ function MonthlyObjectivesPanel({
               </label>
 
               <label>
-                Sport hours target
+                <span className="objectives-field-label">
+                    <Dumbbell size={15} strokeWidth={2.4} />
+                    Sport hours target
+                </span>
                 <input
                   type="number"
                   min="0"
@@ -536,7 +550,10 @@ function MonthlyObjectivesPanel({
               onSubmit={handleSubmitCustomGoal}
             >
               <label>
-                Goal title
+                <span className="objectives-field-label">
+                    <ListChecks size={15} strokeWidth={2.4} />
+                    Goal title
+                </span>
                 <input
                   type="text"
                   value={customGoalTitle}
