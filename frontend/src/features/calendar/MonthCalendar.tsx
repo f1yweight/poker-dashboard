@@ -51,6 +51,15 @@ function MonthCalendar({
         const dayDateKey = formatDateForApi(dayDate);
         const entry = entriesByDate[dayDateKey];
 
+        const today = new Date();
+        const todayDate = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+        );
+
+        const isFutureDay = dayDate > todayDate;
+
         function getEntryClassName(entry: DailyEntryPayload | undefined) {
           if (!entry) {
             return '';
@@ -68,12 +77,14 @@ function MonthCalendar({
             className={[
               'calendar-day',
               day === selectedDay ? 'selected' : '',
+              isFutureDay ? 'future' : '',
               getEntryClassName(entry),
             ]
               .filter(Boolean)
               .join(' ')}
             key={day}
             type="button"
+            disabled={isFutureDay}
             onClick={() => onSelectDay(day)}
           >
             <span className="calendar-day-number">{day}</span>

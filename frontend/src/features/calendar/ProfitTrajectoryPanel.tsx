@@ -42,17 +42,32 @@ const monthLabels = [
   'Dec',
 ];
 
-function buildMonthChartData(entriesByDate: Record<string, DailyEntryPayload>) {
-  const sortedEntries = Object.values(entriesByDate).sort((first, second) =>
-    first.entryDate.localeCompare(second.entryDate),
-  );
+function buildMonthChartData(
+  entriesByDate: Record<string, DailyEntryPayload>,
+  currentMonth: Date,
+) {
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+
+  const today = new Date();
+  const isCurrentMonth =
+    year === today.getFullYear() && month === today.getMonth();
+
+  const lastDay = isCurrentMonth
+    ? today.getDate()
+    : new Date(year, month + 1, 0).getDate();
 
   let cumulativeProfit = 0;
 
-  return sortedEntries.map((entry) => {
-    cumulativeProfit += entry.profit ?? 0;
+  return Array.from({ length: lastDay }, (_, index) => {
+    const day = index + 1;
+    const entryDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(
+      day,
+    ).padStart(2, '0')}`;
 
-    const day = Number(entry.entryDate.slice(-2));
+    const entry = entriesByDate[entryDate];
+
+    cumulativeProfit += entry?.profit ?? 0;
 
     return {
       label: String(day),
@@ -177,7 +192,7 @@ function ProfitTrajectoryPanel({
 }: ProfitTrajectoryPanelProps) {
   const chartData =
     period === 'month'
-      ? buildMonthChartData(entriesByDate)
+      ? buildMonthChartData(entriesByDate, currentMonth)
       : buildYearChartData(entriesByDate, currentMonth.getFullYear());
 
   const hasChartData =
@@ -311,16 +326,11 @@ function ProfitTrajectoryPanel({
                   type="monotone"
                   dataKey="profit"
                   stroke="#f5b700"
-                  strokeWidth={2.4}
+                  strokeWidth={2.6}
                   fill="url(#profitFill)"
-                  dot={{
-                    r: 3,
-                    fill: '#101419',
-                    stroke: '#f5b700',
-                    strokeWidth: 2,
-                  }}
+                  dot={false}
                   activeDot={{
-                    r: 5,
+                    r: 4,
                     fill: '#f5b700',
                     stroke: '#ffd166',
                     strokeWidth: 2,

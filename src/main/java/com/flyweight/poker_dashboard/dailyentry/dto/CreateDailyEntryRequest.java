@@ -1,6 +1,7 @@
 package com.flyweight.poker_dashboard.dailyentry.dto;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 public class CreateDailyEntryRequest {
 
     @NotNull
+    @PastOrPresent
     private LocalDate entryDate;
 
     @PositiveOrZero

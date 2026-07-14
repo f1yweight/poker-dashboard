@@ -320,6 +320,22 @@ button {
   text-shadow: 0 0 10px currentColor;
 }
 
+.calendar-day.future {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.calendar-day.future:hover {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  transform: none;
+}
+
+.calendar-day.future .calendar-day-profit,
+.calendar-day.future .calendar-day-dot {
+  opacity: 0.45;
+}
+
 .entry-section h2 {
   margin-top: 0;
   font-size: 20px;

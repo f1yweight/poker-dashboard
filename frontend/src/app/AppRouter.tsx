@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { clearAuthToken, getAuthToken } from '../features/auth/authToken';
+import {
+  clearAuthToken,
+  clearAuthUser,
+  getAuthToken,
+} from '../features/auth/authToken';
 
 import CalendarPage from '../features/calendar/CalendarPage';
 import LoginPage from '../pages/LoginPage';
@@ -17,6 +21,8 @@ function AppRouter() {
 
   function handleLogout() {
     clearAuthToken();
+    clearAuthUser();
+
     setIsAuthenticated(false);
   }
 

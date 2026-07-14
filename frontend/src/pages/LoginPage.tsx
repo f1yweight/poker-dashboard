@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { loginUser } from '../features/auth/authApi';
-import { setAuthToken } from '../features/auth/authToken';
+import { setAuthToken, setAuthUser } from '../features/auth/authToken';
 
 type LoginFormData = {
   email: string;
@@ -39,9 +39,10 @@ function LoginPage({ onLogin }: LoginPageProps) {
 
     try {
       const response = await loginUser(formData);
-      console.log(response);
 
       setAuthToken(response.token);
+      setAuthUser(response.user);
+
       onLogin();
       navigate('/app');
     } catch {

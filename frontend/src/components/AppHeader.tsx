@@ -1,10 +1,16 @@
 import { ChevronDown, LogOut, Zap } from 'lucide-react';
 
+import { getAuthUser } from '../features/auth/authToken';
+
 type AppHeaderProps = {
   onLogout: () => void;
 };
 
 function AppHeader({ onLogout }: AppHeaderProps) {
+  const authUser = getAuthUser();
+  const username = authUser?.username ?? 'Player';
+  const userInitial = username.charAt(0).toUpperCase();
+
   return (
     <header className="app-header">
       <div className="app-brand">
@@ -17,8 +23,8 @@ function AppHeader({ onLogout }: AppHeaderProps) {
 
       <div className="app-user-area">
         <button className="app-user-pill" type="button">
-          <span className="app-user-avatar">P</span>
-          <span>Player</span>
+          <span className="app-user-avatar">{userInitial}</span>
+          <span>{username}</span>
           <ChevronDown size={15} strokeWidth={2.4} />
         </button>
 
