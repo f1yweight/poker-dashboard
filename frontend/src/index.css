@@ -729,7 +729,31 @@ button {
 }
 
 .monthly-objectives-header h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   margin: 0;
+}
+
+.monthly-objectives-header p {
+  margin: 6px 0 0;
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.custom-goals-list-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.custom-goals-list-header svg {
+  color: #f5b700;
 }
 
 .objectives-actions {
@@ -1239,6 +1263,9 @@ button {
 }
 
 .profit-trajectory-panel h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   margin: 0;
   color: var(--color-muted);
   font-size: 13px;
@@ -1263,6 +1290,11 @@ button {
 
 .profit-trajectory-value.negative {
   color: #ff3d72;
+}
+
+.monthly-objectives-header h2 svg,
+.profit-trajectory-panel h2 svg {
+  color: #f5b700;
 }
 
 .profit-chart {

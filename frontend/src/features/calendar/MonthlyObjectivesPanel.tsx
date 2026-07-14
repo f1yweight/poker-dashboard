@@ -16,6 +16,7 @@ import {
   Trash2,
   Trophy,
   X,
+  Target,
 } from 'lucide-react';
 
 import type {
@@ -160,6 +161,14 @@ function MonthlyObjectivesPanel({
       icon: Dumbbell,
     },
   ];
+
+  const completedBuiltInGoalsCount = objectives.filter(
+    (objective) => getProgressPercent(objective.value, objective.target) >= 100,
+  ).length;
+
+  const totalGoalsCount = objectives.length + customGoals.length;
+  const completedGoalsCount =
+    completedBuiltInGoalsCount + completedCustomGoalsCount;
 
   useEffect(() => {
     if (
@@ -312,7 +321,15 @@ function MonthlyObjectivesPanel({
   return (
     <section className="monthly-objectives-panel">
       <div className="monthly-objectives-header">
-        <h2>Monthly objectives</h2>
+        <div>
+          <h2>
+            <Target size={15} strokeWidth={2.4} />
+            Monthly objectives
+          </h2>
+          <p>
+            {completedGoalsCount} / {totalGoalsCount} goals complete
+          </p>
+        </div>
 
         <div className="objectives-actions" ref={actionsRef}>
           <button
@@ -379,6 +396,11 @@ function MonthlyObjectivesPanel({
 
       {visibleCustomGoals.length > 0 && (
         <div className="custom-goals-list">
+          <div className="custom-goals-list-header">
+            <ListChecks size={15} strokeWidth={2.4} />
+            <span>Custom goals</span>
+          </div>
+
           {visibleCustomGoals.map(renderCustomGoal)}
         </div>
       )}

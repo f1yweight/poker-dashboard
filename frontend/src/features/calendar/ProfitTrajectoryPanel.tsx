@@ -9,6 +9,7 @@ import {
 } from 'recharts';
 
 import { DollarSign } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 
 import type { DailyEntryPayload } from '../daily-entry/dailyEntryTypes';
 
@@ -127,7 +128,10 @@ function ProfitTrajectoryPanel({ entriesByDate }: ProfitTrajectoryPanelProps) {
   return (
     <section className="profit-trajectory-panel">
       <div className="profit-trajectory-header">
-        <h2>Profit trajectory</h2>
+        <h2>
+          <TrendingUp size={15} strokeWidth={2.4} />
+          Profit trajectory
+        </h2>
 
         <strong
           className={
