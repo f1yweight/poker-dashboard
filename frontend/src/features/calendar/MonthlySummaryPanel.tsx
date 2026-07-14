@@ -17,9 +17,9 @@ type MonthlySummary = {
   sessions: number;
   totalMttPlayed: number;
   totalHandsPlayed: number;
-  averageEvBb100: number;
+  averageEvBb100: number | null;
   totalProfit: number;
-  averageAbi: number;
+  averageAbi: number | null;
   totalMttHours: number;
   totalLearningHours: number;
   totalSportHours: number;
@@ -46,7 +46,11 @@ type SummaryCard = {
   status?: SummaryStatus;
 };
 
-function formatNumber(value: number) {
+function formatNumber(value: number | null) {
+  if (value === null) {
+    return '-';
+  }
+
   return new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 1,
   }).format(value);
@@ -194,8 +198,14 @@ function MonthlySummaryPanel({ summary }: MonthlySummaryPanelProps) {
       icon: TrendingUp,
       tone: 'ev',
       featured: true,
-      scoreClassName: getEvBb100ScoreClass(summary.averageEvBb100),
-      status: getEvBb100Status(summary.averageEvBb100),
+      scoreClassName:
+        summary.averageEvBb100 === null
+          ? undefined
+          : getEvBb100ScoreClass(summary.averageEvBb100),
+      status:
+        summary.averageEvBb100 === null
+          ? undefined
+          : getEvBb100Status(summary.averageEvBb100),
     },
     {
       label: 'Sessions',

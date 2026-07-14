@@ -3,6 +3,7 @@ package com.flyweight.poker_dashboard.security;
 import com.flyweight.poker_dashboard.user.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -13,8 +14,14 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY = "very-long-secret-key-for-poker-dashboard-jwt-token-signing-123456";
-    private static final long EXPIRATION_SECONDS = 60 * 60 * 24; // 24 hours
+    private final String secretKey;
+    private final long expirationSeconds;
+
+    public JwtService(@Value("${jwt.secret}") String secretKey
+            , @Value("${jwt.expiration-seconds}") long expirationSeconds) {
+        this.secretKey = secretKey;
+        this.expirationSeconds = expirationSeconds;
+    }
 
     public String generateToken(User user) {
         Instant now = Instant.now();
@@ -22,7 +29,7 @@ public class JwtService {
         return Jwts.builder()
                 .subject(user.getEmail())
                 .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusSeconds(EXPIRATION_SECONDS)))
+                .expiration(Date.from(now.plusSeconds(expirationSeconds)))
                 .signWith(getSecretKey())
                 .compact();
     }
@@ -49,7 +56,6 @@ public class JwtService {
     }
 
     private SecretKey getSecretKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
-
 }
