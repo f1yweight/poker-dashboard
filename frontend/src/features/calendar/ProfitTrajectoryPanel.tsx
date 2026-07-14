@@ -1,3 +1,4 @@
+import { DollarSign, TrendingUp } from 'lucide-react';
 import {
   Area,
   AreaChart,
@@ -8,23 +9,40 @@ import {
   YAxis,
 } from 'recharts';
 
-import { DollarSign } from 'lucide-react';
-import { TrendingUp } from 'lucide-react';
-
 import type { DailyEntryPayload } from '../daily-entry/dailyEntryTypes';
+
+type ProfitChartPeriod = 'month' | 'year';
 
 type ProfitTrajectoryPanelProps = {
   entriesByDate: Record<string, DailyEntryPayload>;
+  currentMonth: Date;
+  period: ProfitChartPeriod;
+  isLoading: boolean;
+  errorMessage: string | null;
+  onPeriodChange: (period: ProfitChartPeriod) => void;
 };
 
 type ChartPoint = {
-  day: string;
+  label: string;
   profit: number;
 };
 
-function buildChartData(
-  entriesByDate: Record<string, DailyEntryPayload>,
-): ChartPoint[] {
+const monthLabels = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+function buildMonthChartData(entriesByDate: Record<string, DailyEntryPayload>) {
   const sortedEntries = Object.values(entriesByDate).sort((first, second) =>
     first.entryDate.localeCompare(second.entryDate),
   );
@@ -37,7 +55,44 @@ function buildChartData(
     const day = Number(entry.entryDate.slice(-2));
 
     return {
-      day: String(day),
+      label: String(day),
+      profit: cumulativeProfit,
+    };
+  });
+}
+
+function buildYearChartData(
+  entriesByDate: Record<string, DailyEntryPayload>,
+  year: number,
+) {
+  const today = new Date();
+  const isCurrentYear = year === today.getFullYear();
+  const lastMonthIndex = isCurrentYear ? today.getMonth() : 11;
+  const monthlyProfits = Array.from({ length: lastMonthIndex + 1 }, () => 0);
+
+  Object.values(entriesByDate).forEach((entry) => {
+    const entryYear = Number(entry.entryDate.slice(0, 4));
+
+    if (entryYear !== year) {
+      return;
+    }
+
+    const monthIndex = Number(entry.entryDate.slice(5, 7)) - 1;
+
+    if (monthIndex > lastMonthIndex) {
+      return;
+    }
+
+    monthlyProfits[monthIndex] += entry.profit ?? 0;
+  });
+
+  let cumulativeProfit = 0;
+
+  return monthlyProfits.map((profit, index) => {
+    cumulativeProfit += profit;
+
+    return {
+      label: monthLabels[index],
       profit: cumulativeProfit,
     };
   });
@@ -102,11 +157,7 @@ function getYAxisConfig(chartData: ChartPoint[]) {
 
   const ticks: number[] = [];
 
-  for (
-    let tick = minDomain;
-    tick <= normalizedMaxDomain;
-    tick += yAxisStep
-  ) {
+  for (let tick = minDomain; tick <= normalizedMaxDomain; tick += yAxisStep) {
     ticks.push(tick);
   }
 
@@ -116,9 +167,24 @@ function getYAxisConfig(chartData: ChartPoint[]) {
   };
 }
 
-function ProfitTrajectoryPanel({ entriesByDate }: ProfitTrajectoryPanelProps) {
-  const chartData = buildChartData(entriesByDate);
-  const hasChartData = chartData.length > 0;
+function ProfitTrajectoryPanel({
+  entriesByDate,
+  currentMonth,
+  period,
+  isLoading,
+  errorMessage,
+  onPeriodChange,
+}: ProfitTrajectoryPanelProps) {
+  const chartData =
+    period === 'month'
+      ? buildMonthChartData(entriesByDate)
+      : buildYearChartData(entriesByDate, currentMonth.getFullYear());
+
+  const hasChartData =
+    period === 'month'
+      ? chartData.length > 0
+      : chartData.some((point) => point.profit !== 0);
+
   const finalProfit = hasChartData
     ? chartData[chartData.length - 1].profit
     : 0;
@@ -128,105 +194,146 @@ function ProfitTrajectoryPanel({ entriesByDate }: ProfitTrajectoryPanelProps) {
   return (
     <section className="profit-trajectory-panel">
       <div className="profit-trajectory-header">
-        <h2>
+        <div className="profit-net-heading">
           <TrendingUp size={15} strokeWidth={2.4} />
-          Profit trajectory
-        </h2>
 
-        <strong
-          className={
-            finalProfit >= 0
-              ? 'profit-trajectory-value positive'
-              : 'profit-trajectory-value negative'
-          }
-        >
-          {formatProfit(finalProfit)}
-          <DollarSign size={18} strokeWidth={2.6} />
-        </strong>
+          <span>Net earnings</span>
+
+          <strong
+            className={
+              finalProfit >= 0
+                ? 'profit-trajectory-value positive'
+                : 'profit-trajectory-value negative'
+            }
+          >
+            {formatProfit(finalProfit)}
+            <DollarSign size={18} strokeWidth={2.6} />
+          </strong>
+        </div>
+
+        <div className="profit-period-toggle">
+          <button
+            className={period === 'month' ? 'active' : ''}
+            type="button"
+            onClick={() => onPeriodChange('month')}
+          >
+            Month
+          </button>
+
+          <button
+            className={period === 'year' ? 'active' : ''}
+            type="button"
+            onClick={() => onPeriodChange('year')}
+          >
+            Year
+          </button>
+        </div>
       </div>
 
-      <div className="profit-chart">
-        {hasChartData ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={chartData}
-              margin={{ top: 12, right: 8, bottom: 18, left: 8 }}
-            >
-              <defs>
-                <linearGradient id="profitFill" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#f5b700" stopOpacity={0.28} />
-                  <stop offset="100%" stopColor="#f5b700" stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
+      <div className="profit-chart-card">
+        <div className="profit-chart">
+          {isLoading && <p>Loading profit chart...</p>}
 
-              <CartesianGrid
-                stroke="rgba(138, 160, 189, 0.14)"
-                strokeDasharray="4 4"
-                vertical={false}
-              />
+          {!isLoading && errorMessage && <p>{errorMessage}</p>}
 
-              <XAxis
-                dataKey="day"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: '#8aa0bd', fontSize: 12, fontWeight: 700 }}
-                dy={8}
-              />
+          {!isLoading && !errorMessage && hasChartData && (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={chartData}
+                margin={{ top: 12, right: 8, bottom: 18, left: 8 }}
+              >
+                <defs>
+                  <linearGradient id="profitFill" x1="0" x2="0" y1="0" y2="1">
+                    <stop
+                      offset="0%"
+                      stopColor="#f5b700"
+                      stopOpacity={0.24}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="#f5b700"
+                      stopOpacity={0.02}
+                    />
+                  </linearGradient>
+                </defs>
 
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tick={{
-                  fill: '#8aa0bd',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  dx: -8,
-                }}
-                tickFormatter={formatProfit}
-                width={78}
-                domain={yAxisConfig.domain}
-                ticks={yAxisConfig.ticks}
-              />
+                <CartesianGrid
+                  stroke="rgba(138, 160, 189, 0.14)"
+                  strokeDasharray="4 4"
+                  vertical={false}
+                />
 
-              <Tooltip
-                cursor={{ stroke: '#f5b700', strokeOpacity: 0.35 }}
-                contentStyle={{
-                  border: '1px solid #243044',
-                  borderRadius: '8px',
-                  background: '#101419',
-                  color: '#ffffff',
-                }}
-                formatter={(value) => [
-                  formatProfit(Number(value)),
-                  'Profit',
-                ]}
-                labelFormatter={(label) => `Day ${label}`}
-              />
+                <XAxis
+                  dataKey="label"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{
+                    fill: '#8aa0bd',
+                    fontSize: 12,
+                    fontWeight: 700,
+                  }}
+                  dy={8}
+                />
 
-              <Area
-                type="monotone"
-                dataKey="profit"
-                stroke="#f5b700"
-                strokeWidth={3}
-                fill="url(#profitFill)"
-                dot={{
-                  r: 3,
-                  fill: '#101419',
-                  stroke: '#f5b700',
-                  strokeWidth: 2,
-                }}
-                activeDot={{
-                  r: 5,
-                  fill: '#f5b700',
-                  stroke: '#ffd166',
-                  strokeWidth: 2,
-                }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        ) : (
-          <p>Profit chart will be here</p>
-        )}
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{
+                    fill: '#8aa0bd',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    dx: -8,
+                  }}
+                  tickFormatter={formatProfit}
+                  width={78}
+                  domain={yAxisConfig.domain}
+                  ticks={yAxisConfig.ticks}
+                />
+
+                <Tooltip
+                  cursor={{ stroke: '#f5b700', strokeOpacity: 0.35 }}
+                  contentStyle={{
+                    border: '1px solid #243044',
+                    borderRadius: '8px',
+                    background: '#101419',
+                    color: '#ffffff',
+                  }}
+                  formatter={(value) => [
+                    formatProfit(Number(value)),
+                    'Profit',
+                  ]}
+                  labelFormatter={(label) =>
+                    period === 'month' ? `Day ${label}` : String(label)
+                  }
+                />
+
+                <Area
+                  type="monotone"
+                  dataKey="profit"
+                  stroke="#f5b700"
+                  strokeWidth={2.4}
+                  fill="url(#profitFill)"
+                  dot={{
+                    r: 3,
+                    fill: '#101419',
+                    stroke: '#f5b700',
+                    strokeWidth: 2,
+                  }}
+                  activeDot={{
+                    r: 5,
+                    fill: '#f5b700',
+                    stroke: '#ffd166',
+                    strokeWidth: 2,
+                  }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
+
+          {!isLoading && !errorMessage && !hasChartData && (
+            <p>Profit chart will be here</p>
+          )}
+        </div>
       </div>
     </section>
   );

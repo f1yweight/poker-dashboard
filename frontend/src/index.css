@@ -1259,15 +1259,24 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
-.profit-trajectory-panel h2 {
+.profit-net-heading {
   display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin: 0;
-  color: var(--color-muted);
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.profit-net-heading svg {
+  color: #f5b700;
+  flex: 0 0 auto;
+  transform: translateY(1px);
+}
+
+.profit-net-heading span {
+  color: var(--color-text);
   font-size: 13px;
   font-weight: 900;
   line-height: 1;
@@ -1278,7 +1287,8 @@ button {
 .profit-trajectory-value {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  color: #f5b700;
   font-size: 22px;
   font-weight: 900;
   line-height: 1;
@@ -1292,8 +1302,7 @@ button {
   color: #ff3d72;
 }
 
-.monthly-objectives-header h2 svg,
-.profit-trajectory-panel h2 svg {
+.monthly-objectives-header h2 svg {
   color: #f5b700;
 }
 
@@ -1313,6 +1322,36 @@ button {
   color: var(--color-muted);
   font-size: 14px;
   font-weight: 600;
+}
+
+.profit-period-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 3px;
+  background: #0b0f14;
+}
+
+.profit-period-toggle button {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.profit-period-toggle button:hover {
+  color: var(--color-text);
+}
+
+.profit-period-toggle button.active {
+  background: rgb(245 183 0 / 0.14);
+  color: #f5b700;
 }
 
 .chart-placeholder {

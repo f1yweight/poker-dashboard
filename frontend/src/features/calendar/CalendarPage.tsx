@@ -39,6 +39,8 @@ type CalendarPageProps = {
   onLogout: () => void;
 };
 
+type ProfitChartPeriod = 'month' | 'year';
+
 function dailyEntryResponseToPayload(
   response: DailyEntryResponse,
 ): DailyEntryPayload {
@@ -90,6 +92,8 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
 
   const selectedEntryDate = formatDateForApi(selectedDate);
   const selectedMonthDate = formatDateForApi(getMonthStartDate(currentMonth));
+  const selectedYearStartDate = `${currentMonth.getFullYear()}-01-01`;
+  const selectedYearEndDate = `${currentMonth.getFullYear()}-12-31`;
   const selectedEntry = entriesByDate[selectedEntryDate];
   const isSelectedEntrySaved = lastSavedEntryDate === selectedEntryDate;
   const summary = calculateMonthlySummary(entriesByDate);
@@ -108,6 +112,18 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
   const [customGoals, setCustomGoals] = useState<CustomMonthlyGoal[]>([]);
   const [isLoadingCustomGoals, setIsLoadingCustomGoals] = useState(false);
   const [customGoalsErrorMessage, setCustomGoalsErrorMessage] = useState<string | null>(null);
+
+  const [profitChartPeriod, setProfitChartPeriod] =
+    useState<ProfitChartPeriod>('month');
+
+  const [yearEntriesByDate, setYearEntriesByDate] = useState<
+    Record<string, DailyEntryPayload>
+  >({});
+
+  const [isLoadingYearEntries, setIsLoadingYearEntries] = useState(false);
+
+  const [yearEntriesErrorMessage, setYearEntriesErrorMessage] =
+    useState<string | null>(null);
 
   useEffect(() => {
     async function loadMonthEntries() {
@@ -139,6 +155,44 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
 
     void loadMonthEntries();
   }, [currentMonth]);
+
+  useEffect(() => {
+    if (profitChartPeriod !== 'year') {
+      return;
+    }
+
+    async function loadYearEntries() {
+      setIsLoadingYearEntries(true);
+      setYearEntriesErrorMessage(null);
+
+      try {
+        const responses = await getDailyEntriesByDateRange(
+          selectedYearStartDate,
+          selectedYearEndDate,
+        );
+
+        const nextEntries = responses.reduce<Record<string, DailyEntryPayload>>(
+          (entries, response) => {
+            const payload = dailyEntryResponseToPayload(response);
+            entries[payload.entryDate] = payload;
+            return entries;
+          },
+          {},
+        );
+
+        setYearEntriesByDate(nextEntries);
+      } catch {
+        setYearEntriesByDate({});
+        setYearEntriesErrorMessage(
+          'Could not load yearly profit chart. Please try again.',
+        );
+      } finally {
+        setIsLoadingYearEntries(false);
+      }
+    }
+
+    void loadYearEntries();
+  }, [profitChartPeriod, selectedYearStartDate, selectedYearEndDate]);
 
   useEffect(() => {
     async function loadObjectiveTargets() {
@@ -341,7 +395,16 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
             />
           </section>
 
-          <ProfitTrajectoryPanel entriesByDate={entriesByDate} />
+          <ProfitTrajectoryPanel
+            entriesByDate={
+              profitChartPeriod === 'month' ? entriesByDate : yearEntriesByDate
+            }
+            currentMonth={currentMonth}
+            period={profitChartPeriod}
+            isLoading={isLoadingYearEntries}
+            errorMessage={yearEntriesErrorMessage}
+            onPeriodChange={setProfitChartPeriod}
+          />
         </div>
 
         <MonthlySummaryPanel summary={summary} />
