@@ -286,12 +286,12 @@ function ProfitTrajectoryPanel({
                     <stop
                       offset="0%"
                       stopColor="#f5b700"
-                      stopOpacity={0.24}
+                      stopOpacity={0.16}
                     />
                     <stop
                       offset="100%"
                       stopColor="#f5b700"
-                      stopOpacity={0.02}
+                      stopOpacity={0.01}
                     />
                   </linearGradient>
                 </defs>
@@ -350,7 +350,7 @@ function ProfitTrajectoryPanel({
                   type="monotone"
                   dataKey="profit"
                   stroke="#f5b700"
-                  strokeWidth={2.6}
+                  strokeWidth={2.2}
                   fill="url(#profitFill)"
                   dot={false}
                   activeDot={{
