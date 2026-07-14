@@ -53,9 +53,22 @@ function buildMonthChartData(
   const isCurrentMonth =
     year === today.getFullYear() && month === today.getMonth();
 
+  const monthLastDay = new Date(year, month + 1, 0).getDate();
+
+  const entryDays = Object.values(entriesByDate)
+    .filter((entry) => {
+      const entryYear = Number(entry.entryDate.slice(0, 4));
+      const entryMonth = Number(entry.entryDate.slice(5, 7)) - 1;
+
+      return entryYear === year && entryMonth === month;
+    })
+    .map((entry) => Number(entry.entryDate.slice(-2)));
+
+  const lastEntryDay = Math.max(0, ...entryDays);
+
   const lastDay = isCurrentMonth
     ? today.getDate()
-    : new Date(year, month + 1, 0).getDate();
+    : Math.min(monthLastDay, lastEntryDay + 1);
 
   let cumulativeProfit = 0;
 
@@ -160,8 +173,12 @@ function getYAxisConfig(chartData: ChartPoint[]) {
   }
 
   const profitValues = chartData.map((point) => point.profit);
-  const minProfit = Math.min(0, ...profitValues);
-  const maxProfit = Math.max(0, ...profitValues);
+  const rawMinProfit = Math.min(0, ...profitValues);
+  const rawMaxProfit = Math.max(0, ...profitValues);
+
+  const minProfit = rawMinProfit < 0 ? Math.min(rawMinProfit, -500) : 0;
+  const maxProfit = rawMaxProfit > 0 ? Math.max(rawMaxProfit, 500) : 0;
+
   const yAxisStep = getYAxisStep(minProfit, maxProfit);
 
   const minDomain = Math.floor(minProfit / yAxisStep) * yAxisStep;
@@ -195,10 +212,17 @@ function ProfitTrajectoryPanel({
       ? buildMonthChartData(entriesByDate, currentMonth)
       : buildYearChartData(entriesByDate, currentMonth.getFullYear());
 
-  const hasChartData =
-    period === 'month'
-      ? chartData.length > 0
-      : chartData.some((point) => point.profit !== 0);
+  const hasEntries = Object.values(entriesByDate).some((entry) => {
+    const entryYear = Number(entry.entryDate.slice(0, 4));
+
+    if (period === 'year') {
+      return entryYear === currentMonth.getFullYear();
+    }
+
+    return true;
+  });
+
+  const hasChartData = hasEntries;
 
   const finalProfit = hasChartData
     ? chartData[chartData.length - 1].profit
@@ -341,7 +365,10 @@ function ProfitTrajectoryPanel({
           )}
 
           {!isLoading && !errorMessage && !hasChartData && (
-            <p>Profit chart will be here</p>
+            <div className="profit-chart-empty">
+              <strong>No daily entries yet</strong>
+              <span>Add your first session to see profit trajectory.</span>
+            </div>
           )}
         </div>
       </div>

@@ -829,6 +829,50 @@ calendar-day-tooltip-currency {
   gap: 12px;
 }
 
+.monthly-summary-groups {
+  display: grid;
+  gap: 20px;
+}
+
+.monthly-summary-group {
+  display: grid;
+  gap: 10px;
+}
+
+.monthly-summary-group + .monthly-summary-group {
+  border-top: 1px solid rgb(138 160 189 / 0.1);
+  padding-top: 4px;
+}
+
+.monthly-summary-group h3 {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  opacity: 0.78;
+}
+
+.monthly-summary-grid-featured {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.monthly-summary-grid-details .summary-card {
+  min-height: 74px;
+  padding: 14px 16px;
+  background: rgb(18 24 33 / 0.72);
+}
+
+.monthly-summary-grid-details .summary-value {
+  font-size: 24px;
+}
+
+.monthly-summary-grid-details .summary-card-header {
+  margin-bottom: 8px;
+}
+
 .monthly-summary-panel {
   width: 100%;
   box-sizing: border-box;
@@ -1040,6 +1084,13 @@ calendar-day-tooltip-currency {
   background: #151a22;
 }
 
+.summary-card-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .summary-card-header {
   display: flex;
   align-items: center;
@@ -1090,6 +1141,53 @@ calendar-day-tooltip-currency {
 .summary-card-primary .summary-value {
   color: #f5b700;
   text-shadow: 0 0 18px rgb(245 183 0 / 0.25);
+}
+
+.summary-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: 42px;
+  min-height: 42px;
+  border: 1px solid rgb(138 160 189 / 0.18);
+  border-radius: 999px;
+  padding: 8px;
+  background: rgb(138 160 189 / 0.08);
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.summary-status:not(:has(svg)) {
+  min-width: auto;
+  min-height: auto;
+  padding: 4px 8px;
+}
+
+.summary-status-good {
+  border-color: rgb(34 197 94 / 0.32);
+  background: rgb(34 197 94 / 0.1);
+  color: #34d399;
+}
+
+.summary-status-warning {
+  border-color: rgb(245 183 0 / 0.34);
+  background: rgb(245 183 0 / 0.1);
+  color: #f5b700;
+}
+
+.summary-status-bad {
+  border-color: rgb(255 59 115 / 0.32);
+  background: rgb(255 59 115 / 0.1);
+  color: #ff3b73;
+}
+
+.summary-status-neutral {
+  border-color: rgb(138 160 189 / 0.22);
+  background: rgb(138 160 189 / 0.08);
+  color: var(--color-muted);
 }
 
 .summary-icon {
@@ -1462,6 +1560,30 @@ calendar-day-tooltip-currency {
   font-weight: 600;
 }
 
+.profit-chart-empty {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  height: 100%;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.profit-chart-empty strong {
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.profit-chart-empty span {
+  max-width: 260px;
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
 .profit-period-toggle {
   display: inline-flex;
   align-items: center;
@@ -1538,4 +1660,14 @@ calendar-day-tooltip-currency {
 .summary-card-primary .summary-value.summary-value-positive {
   color: #f5b700;
   text-shadow: 0 0 18px rgb(245 183 0 / 0.25);
+}
+
+.summary-card-primary .summary-value.summary-value-positive {
+  color: #34d399;
+  text-shadow: 0 0 18px rgb(52 211 153 / 0.22);
+}
+
+.summary-card-primary .summary-value.summary-value-negative {
+  color: #ff3b73;
+  text-shadow: 0 0 18px rgb(255 59 115 / 0.22);
 }

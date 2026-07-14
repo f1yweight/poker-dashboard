@@ -8,6 +8,8 @@ import {
   Hand,
   TrendingUp,
   Trophy,
+  Smile,
+  Frown,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -27,6 +29,12 @@ type MonthlySummaryPanelProps = {
   summary: MonthlySummary;
 };
 
+type SummaryStatus = {
+  label: string;
+  tone: 'good' | 'warning' | 'bad' | 'neutral';
+  icon?: LucideIcon;
+};
+
 type SummaryCard = {
   label: string;
   value: string;
@@ -35,6 +43,7 @@ type SummaryCard = {
   featured?: boolean;
   primary?: boolean;
   scoreClassName?: string;
+  status?: SummaryStatus;
 };
 
 function formatNumber(value: number) {
@@ -89,6 +98,64 @@ function getEvBb100ScoreClass(value: number) {
   return 'summary-card-score-bad';
 }
 
+function getTotalMttStatus(value: number): SummaryStatus {
+  if (value >= 400) {
+    return {
+      label: 'Strong',
+      tone: 'good',
+    };
+  }
+
+  if (value >= 300) {
+    return {
+      label: 'Solid',
+      tone: 'warning',
+    };
+  }
+
+  return {
+    label: 'Low',
+    tone: 'bad',
+  };
+}
+
+function getEvBb100Status(value: number): SummaryStatus {
+  if (value >= 10) {
+    return {
+      label: 'Strong',
+      tone: 'good',
+    };
+  }
+
+  if (value >= 5) {
+    return {
+      label: 'Solid',
+      tone: 'warning',
+    };
+  }
+
+  return {
+    label: 'Needs work',
+    tone: 'bad',
+  };
+}
+
+function getProfitStatus(value: number): SummaryStatus {
+  if (value > 0) {
+    return {
+      label: 'Winning month',
+      tone: 'good',
+      icon: Smile,
+    };
+  }
+
+  return {
+    label: 'Losing month',
+    tone: 'bad',
+    icon: Frown,
+  };
+}
+
 function getValueToneClass(value: number) {
   if (value > 0) {
     return 'summary-value-positive';
@@ -110,6 +177,7 @@ function MonthlySummaryPanel({ summary }: MonthlySummaryPanelProps) {
       tone: 'neutral',
       featured: true,
       scoreClassName: getTotalMttScoreClass(summary.totalMttPlayed),
+      status: getTotalMttStatus(summary.totalMttPlayed),
     },
     {
       label: 'Total profit',
@@ -118,6 +186,7 @@ function MonthlySummaryPanel({ summary }: MonthlySummaryPanelProps) {
       tone: 'profit',
       featured: true,
       primary: true,
+      status: getProfitStatus(summary.totalProfit),
     },
     {
       label: 'EV BB/100',
@@ -126,6 +195,7 @@ function MonthlySummaryPanel({ summary }: MonthlySummaryPanelProps) {
       tone: 'ev',
       featured: true,
       scoreClassName: getEvBb100ScoreClass(summary.averageEvBb100),
+      status: getEvBb100Status(summary.averageEvBb100),
     },
     {
       label: 'Sessions',
@@ -165,44 +235,77 @@ function MonthlySummaryPanel({ summary }: MonthlySummaryPanelProps) {
     },
   ];
 
+  const featuredCards = cards.filter((card) => card.featured);
+  const detailCards = cards.filter((card) => !card.featured);
+
+  function renderCard(card: SummaryCard) {
+    const Icon = card.icon;
+    const StatusIcon = card.status?.icon;
+    const valueToneClass =
+      card.tone === 'profit' ? getValueToneClass(summary.totalProfit) : '';
+
+    return (
+      <article
+        className={[
+          'summary-card',
+          card.featured ? 'summary-card-featured' : '',
+          card.primary ? 'summary-card-primary' : '',
+          card.scoreClassName ?? '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        key={card.label}
+      >
+        <div className="summary-card-header">
+          <span className={`summary-icon summary-icon-${card.tone}`}>
+            <Icon size={16} strokeWidth={2.4} />
+          </span>
+
+          <span>{card.label}</span>
+        </div>
+
+        <div className="summary-card-body">
+          <strong className={`summary-value ${valueToneClass}`}>
+            {card.value}
+          </strong>
+
+          {card.status && (
+            <span
+              className={`summary-status summary-status-${card.status.tone}`}
+              title={card.status.label}
+            >
+              {StatusIcon ? (
+                <StatusIcon size={26} strokeWidth={2.4} />
+              ) : (
+                card.status.label
+              )}
+            </span>
+          )}
+        </div>
+      </article>
+    );
+  }
+
   return (
     <section className="monthly-summary-panel">
       <h2>Monthly summary</h2>
 
-      <div className="monthly-summary-grid">
-        {cards.map((card) => {
-          const Icon = card.icon;
-          const valueToneClass =
-            card.tone === 'profit'
-              ? getValueToneClass(summary.totalProfit)
-              : '';
+      <div className="monthly-summary-groups">
+        <div className="monthly-summary-group">
+          <h3>Key results</h3>
 
-          return (
-            <article
-              className={[
-                'summary-card',
-                card.featured ? 'summary-card-featured' : '',
-                card.primary ? 'summary-card-primary' : '',
-                card.scoreClassName ?? '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              key={card.label}
-            >
-              <div className="summary-card-header">
-                <span className={`summary-icon summary-icon-${card.tone}`}>
-                  <Icon size={16} strokeWidth={2.4} />
-                </span>
+          <div className="monthly-summary-grid monthly-summary-grid-featured">
+            {featuredCards.map(renderCard)}
+          </div>
+        </div>
 
-                <span>{card.label}</span>
-              </div>
+        <div className="monthly-summary-group">
+          <h3>Details</h3>
 
-              <strong className={`summary-value ${valueToneClass}`}>
-                {card.value}
-              </strong>
-            </article>
-          );
-        })}
+          <div className="monthly-summary-grid monthly-summary-grid-details">
+            {detailCards.map(renderCard)}
+          </div>
+        </div>
       </div>
     </section>
   );
