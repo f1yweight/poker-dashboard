@@ -1,6 +1,8 @@
 import { formatDateForApi } from '../../shared/date/dateUtils';
 import { getCalendarDays } from './calendarUtils';
 
+import CalendarDayTooltip from './CalendarDayTooltip';
+
 import type { DailyEntryPayload } from '../daily-entry/dailyEntryTypes';
 
 const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -51,6 +53,12 @@ function MonthCalendar({
         const dayDateKey = formatDateForApi(dayDate);
         const entry = entriesByDate[dayDateKey];
 
+        const dayDateLabel = dayDate.toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+        });
+
         const today = new Date();
         const todayDate = new Date(
           today.getFullYear(),
@@ -97,6 +105,8 @@ function MonthCalendar({
                 {entry.profit}
               </span>
             )}
+
+            {entry && <CalendarDayTooltip dateLabel={dayDateLabel} entry={entry} />}
           </button>
         );
       })}
