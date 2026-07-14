@@ -25,6 +25,15 @@ import {
   type MonthlyObjectiveTargets,
   type UpdateMonthlyObjectiveTargetsRequest,
 } from '../monthly-objectives/monthlyObjectiveTargetsApi';
+import {
+  createCustomMonthlyGoal,
+  deleteCustomMonthlyGoal,
+  getCustomMonthlyGoals,
+  updateCustomMonthlyGoal,
+  type CustomMonthlyGoal,
+  type CreateCustomMonthlyGoalRequest,
+  type UpdateCustomMonthlyGoalRequest,
+} from '../monthly-objectives/customMonthlyGoalsApi';
 
 type CalendarPageProps = {
   onLogout: () => void;
@@ -96,6 +105,10 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
   const [objectiveTargetsErrorMessage, setObjectiveTargetsErrorMessage] =
     useState<string | null>(null);
 
+  const [customGoals, setCustomGoals] = useState<CustomMonthlyGoal[]>([]);
+  const [isLoadingCustomGoals, setIsLoadingCustomGoals] = useState(false);
+  const [customGoalsErrorMessage, setCustomGoalsErrorMessage] = useState<string | null>(null);
+
   useEffect(() => {
     async function loadMonthEntries() {
       setIsLoadingEntry(true);
@@ -146,6 +159,27 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
     }
 
     void loadObjectiveTargets();
+  }, [selectedMonthDate]);
+
+  useEffect(() => {
+    async function loadCustomGoals() {
+      setIsLoadingCustomGoals(true);
+      setCustomGoalsErrorMessage(null);
+
+      try {
+        const goals = await getCustomMonthlyGoals(selectedMonthDate);
+        setCustomGoals(goals);
+      } catch {
+        setCustomGoals([]);
+        setCustomGoalsErrorMessage(
+          'Could not load custom goals. Please try again.',
+        );
+      } finally {
+        setIsLoadingCustomGoals(false);
+      }
+    }
+
+    void loadCustomGoals();
   }, [selectedMonthDate]);
 
   function handlePreviousMonth() {
@@ -204,6 +238,67 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
     }
   }
 
+  async function handleCreateCustomGoal(
+    payload: CreateCustomMonthlyGoalRequest,
+  ) {
+    setIsLoadingCustomGoals(true);
+    setCustomGoalsErrorMessage(null);
+
+    try {
+      const createdGoal = await createCustomMonthlyGoal(
+        selectedMonthDate,
+        payload,
+      );
+
+      setCustomGoals([...customGoals, createdGoal]);
+    } catch {
+      setCustomGoalsErrorMessage(
+        'Could not create custom goal. Please try again.',
+      );
+    } finally {
+      setIsLoadingCustomGoals(false);
+    }
+  }
+
+  async function handleUpdateCustomGoal(
+    id: number,
+    payload: UpdateCustomMonthlyGoalRequest,
+  ) {
+    setIsLoadingCustomGoals(true);
+    setCustomGoalsErrorMessage(null);
+
+    try {
+      const updatedGoal = await updateCustomMonthlyGoal(id, payload);
+
+      setCustomGoals(
+        customGoals.map((goal) => (goal.id === updatedGoal.id ? updatedGoal : goal)),
+      );
+    } catch {
+      setCustomGoalsErrorMessage(
+        'Could not update custom goal. Please try again.',
+      );
+    } finally {
+      setIsLoadingCustomGoals(false);
+    }
+  }
+
+  async function handleDeleteCustomGoal(id: number) {
+    setIsLoadingCustomGoals(true);
+    setCustomGoalsErrorMessage(null);
+
+    try {
+      await deleteCustomMonthlyGoal(id);
+
+      setCustomGoals(customGoals.filter((goal) => goal.id !== id));
+    } catch {
+      setCustomGoalsErrorMessage(
+        'Could not delete custom goal. Please try again.',
+      );
+    } finally {
+      setIsLoadingCustomGoals(false);
+    }
+  }
+
   function handleSelectDay(day: number) {
     setSelectedDay(day);
     setIsEntryModalOpen(true);
@@ -222,9 +317,13 @@ function CalendarPage({ onLogout }: CalendarPageProps) {
           <MonthlyObjectivesPanel
             summary={summary}
             targets={objectiveTargets}
-            isLoading={isLoadingObjectiveTargets}
-            errorMessage={objectiveTargetsErrorMessage}
+            customGoals={customGoals}
+            isLoading={isLoadingObjectiveTargets || isLoadingCustomGoals}
+            errorMessage={objectiveTargetsErrorMessage ?? customGoalsErrorMessage}
             onSaveTargets={handleSaveObjectiveTargets}
+            onCreateCustomGoal={handleCreateCustomGoal}
+            onUpdateCustomGoal={handleUpdateCustomGoal}
+            onDeleteCustomGoal={handleDeleteCustomGoal}
           />
 
           <section className="calendar-section">

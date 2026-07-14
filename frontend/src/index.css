@@ -925,7 +925,7 @@ button {
   display: grid;
   grid-template-columns: minmax(320px, 0.9fr) minmax(560px, 1.25fr) minmax(420px, 1.1fr);
   gap: 24px;
-  align-items: stretch;
+  align-items: start;
   width: 100%;
 }
 
@@ -948,15 +948,15 @@ button {
 
 .objective-card {
   display: grid;
-  gap: 12px;
+  gap: 7px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  padding: 16px;
-  background: #151a22;
+  padding: 10px 12px;
+  background: var(--color-surface-raised);
 }
 
 .objective-card + .objective-card {
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .objective-card span {
@@ -966,7 +966,7 @@ button {
 
 .objective-card strong {
   color: var(--color-text);
-  font-size: 24px;
+  font-size: 19px;
   font-weight: 900;
   line-height: 1;
 }
@@ -976,7 +976,7 @@ button {
   align-items: center;
   gap: 8px;
   color: var(--color-muted);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -985,7 +985,7 @@ button {
 }
 
 .objective-progress {
-  height: 6px;
+  height: 5px;
   overflow: hidden;
   border-radius: 999px;
   background: #243044;
@@ -997,13 +997,165 @@ button {
   background: linear-gradient(90deg, #f5b700, #ffd166);
 }
 
+.custom-goals-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgb(138 160 189 / 0.14);
+}
+
+.custom-goal-card {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px;
+  background: rgb(21 26 34 / 0.72);
+}
+
+.custom-goal-card span {
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.custom-goal-card.completed span {
+  color: var(--color-muted);
+  text-decoration: line-through;
+}
+
+.custom-goal-check,
+.custom-goal-delete {
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  background: #0b0f14;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.custom-goal-check {
+  width: 24px;
+  height: 24px;
+}
+
+.custom-goal-check:hover {
+  border-color: #34d399;
+  color: #34d399;
+}
+
+.custom-goal-card.completed .custom-goal-check {
+  border-color: rgb(52 211 153 / 0.5);
+  background: rgb(52 211 153 / 0.12);
+  color: #34d399;
+}
+
+.custom-goal-delete {
+  width: 28px;
+  height: 28px;
+}
+
+.custom-goal-delete:hover {
+  border-color: #ff3d72;
+  color: #ff3d72;
+}
+
+.custom-goal-check:disabled,
+.custom-goal-delete:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.custom-goals-summary-card {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgb(21 26 34 / 0.72);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.custom-goals-summary-card:hover {
+  border-color: rgb(245 183 0 / 0.55);
+  background: rgb(245 183 0 / 0.08);
+}
+
+.custom-goals-summary-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgb(245 183 0 / 0.12);
+  color: #f5b700;
+}
+
+.custom-goals-summary-card strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.custom-goals-summary-card small {
+  display: block;
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.custom-goals-modal-list {
+  display: grid;
+  gap: 10px;
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.custom-goals-modal-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-goals-modal-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-goals-modal-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgb(138 160 189 / 0.22);
+}
+
+.custom-goals-modal-list::-webkit-scrollbar-thumb:hover {
+  background: rgb(138 160 189 / 0.34);
+}
+
 .profit-trajectory-panel {
   display: flex;
   flex-direction: column;
+  min-height: 470px;
   border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 18px;
   background: var(--color-surface);
+}
+
+.calendar-section,
+.profit-trajectory-panel {
+  min-height: 470px;
 }
 
 .profit-trajectory-header {
@@ -1039,8 +1191,8 @@ button {
 }
 
 .profit-chart {
-  min-height: 300px;
-  flex: 1;
+  height: 372px;
+  min-height: 372px;
   border: 1px dashed var(--color-border);
   border-radius: 8px;
   padding: 8px;

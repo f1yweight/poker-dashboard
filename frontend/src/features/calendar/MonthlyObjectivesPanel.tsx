@@ -7,18 +7,26 @@ import {
 } from 'react';
 import {
   BookOpen,
+  Check,
   Dumbbell,
+  ListChecks,
   Plus,
   Settings,
   SlidersHorizontal,
+  Trash2,
   Trophy,
   X,
 } from 'lucide-react';
 
 import type {
+  CreateCustomMonthlyGoalRequest,
+  CustomMonthlyGoal,
+  UpdateCustomMonthlyGoalRequest,
+} from '../monthly-objectives/customMonthlyGoalsApi';
+import type {
   MonthlyObjectiveTargets,
   UpdateMonthlyObjectiveTargetsRequest,
-} from './monthlyObjectiveTargetsApi';
+} from '../monthly-objectives/monthlyObjectiveTargetsApi';
 
 type MonthlySummary = {
   totalMttPlayed: number;
@@ -29,11 +37,20 @@ type MonthlySummary = {
 type MonthlyObjectivesPanelProps = {
   summary: MonthlySummary;
   targets: MonthlyObjectiveTargets;
+  customGoals: CustomMonthlyGoal[];
   isLoading: boolean;
   errorMessage: string | null;
   onSaveTargets: (
     payload: UpdateMonthlyObjectiveTargetsRequest,
   ) => Promise<void>;
+  onCreateCustomGoal: (
+    payload: CreateCustomMonthlyGoalRequest,
+  ) => Promise<void>;
+  onUpdateCustomGoal: (
+    id: number,
+    payload: UpdateCustomMonthlyGoalRequest,
+  ) => Promise<void>;
+  onDeleteCustomGoal: (id: number) => Promise<void>;
 };
 
 type MonthlyObjectiveTargetsFormData = {
@@ -94,15 +111,28 @@ function getProgressPercent(value: number, target: number) {
 function MonthlyObjectivesPanel({
   summary,
   targets,
+  customGoals,
   isLoading,
   errorMessage,
   onSaveTargets,
+  onCreateCustomGoal,
+  onUpdateCustomGoal,
+  onDeleteCustomGoal,
 }: MonthlyObjectivesPanelProps) {
   const [draftTargets, setDraftTargets] =
     useState<MonthlyObjectiveTargetsFormData>(() => targetsToFormData(targets));
+  const [customGoalTitle, setCustomGoalTitle] = useState('');
   const [isActionsOpen, setIsActionsOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditTargetsModalOpen, setIsEditTargetsModalOpen] = useState(false);
+  const [isAddGoalModalOpen, setIsAddGoalModalOpen] = useState(false);
+  const [isCustomGoalsModalOpen, setIsCustomGoalsModalOpen] = useState(false);
   const actionsRef = useRef<HTMLDivElement>(null);
+
+  const visibleCustomGoals = customGoals.length <= 2 ? customGoals : [];
+  const shouldShowCustomGoalsSummary = customGoals.length > 2;
+  const completedCustomGoalsCount = customGoals.filter(
+    (goal) => goal.completed,
+  ).length;
 
   const objectives: Objective[] = [
     {
@@ -132,13 +162,20 @@ function MonthlyObjectivesPanel({
   ];
 
   useEffect(() => {
-    if (!isEditModalOpen && !isActionsOpen) {
+    if (
+      !isEditTargetsModalOpen &&
+      !isAddGoalModalOpen &&
+      !isCustomGoalsModalOpen &&
+      !isActionsOpen
+    ) {
       return;
     }
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
-        setIsEditModalOpen(false);
+        setIsEditTargetsModalOpen(false);
+        setIsAddGoalModalOpen(false);
+        setIsCustomGoalsModalOpen(false);
         setIsActionsOpen(false);
       }
     }
@@ -148,7 +185,12 @@ function MonthlyObjectivesPanel({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isEditModalOpen, isActionsOpen]);
+  }, [
+    isEditTargetsModalOpen,
+    isAddGoalModalOpen,
+    isCustomGoalsModalOpen,
+    isActionsOpen,
+  ]);
 
   useEffect(() => {
     if (!isActionsOpen) {
@@ -171,10 +213,16 @@ function MonthlyObjectivesPanel({
     };
   }, [isActionsOpen]);
 
-  function handleOpenEditModal() {
+  function handleOpenEditTargetsModal() {
     setDraftTargets(targetsToFormData(targets));
     setIsActionsOpen(false);
-    setIsEditModalOpen(true);
+    setIsEditTargetsModalOpen(true);
+  }
+
+  function handleOpenAddGoalModal() {
+    setCustomGoalTitle('');
+    setIsActionsOpen(false);
+    setIsAddGoalModalOpen(true);
   }
 
   function handleDraftTargetChange(
@@ -196,7 +244,69 @@ function MonthlyObjectivesPanel({
       sportHoursTarget: toNumberOrZero(draftTargets.sportHoursTarget),
     });
 
-    setIsEditModalOpen(false);
+    setIsEditTargetsModalOpen(false);
+  }
+
+  async function handleSubmitCustomGoal(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const trimmedTitle = customGoalTitle.trim();
+
+    if (!trimmedTitle) {
+      return;
+    }
+
+    await onCreateCustomGoal({
+      title: trimmedTitle,
+    });
+
+    setCustomGoalTitle('');
+    setIsAddGoalModalOpen(false);
+  }
+
+  function renderCustomGoal(goal: CustomMonthlyGoal) {
+    return (
+      <article
+        className={[
+          'custom-goal-card',
+          goal.completed ? 'completed' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        key={goal.id}
+      >
+        <button
+          className="custom-goal-check"
+          type="button"
+          onClick={() =>
+            onUpdateCustomGoal(goal.id, {
+              title: goal.title,
+              completed: !goal.completed,
+            })
+          }
+          aria-label={
+            goal.completed
+              ? 'Mark custom goal as incomplete'
+              : 'Mark custom goal as completed'
+          }
+          disabled={isLoading}
+        >
+          {goal.completed && <Check size={14} strokeWidth={3} />}
+        </button>
+
+        <span>{goal.title}</span>
+
+        <button
+          className="custom-goal-delete"
+          type="button"
+          onClick={() => onDeleteCustomGoal(goal.id)}
+          aria-label="Delete custom goal"
+          disabled={isLoading}
+        >
+          <Trash2 size={14} strokeWidth={2.4} />
+        </button>
+      </article>
+    );
   }
 
   return (
@@ -217,12 +327,12 @@ function MonthlyObjectivesPanel({
 
           {isActionsOpen && (
             <div className="objectives-dropdown">
-              <button type="button" disabled>
+              <button type="button" onClick={handleOpenAddGoalModal}>
                 <Plus size={15} strokeWidth={2.4} />
                 Add custom goal
               </button>
 
-              <button type="button" onClick={handleOpenEditModal}>
+              <button type="button" onClick={handleOpenEditTargetsModal}>
                 <SlidersHorizontal size={15} strokeWidth={2.4} />
                 Edit goals
               </button>
@@ -262,12 +372,37 @@ function MonthlyObjectivesPanel({
         );
       })}
 
-      {isEditModalOpen && (
+      {visibleCustomGoals.length > 0 && (
+        <div className="custom-goals-list">
+          {visibleCustomGoals.map(renderCustomGoal)}
+        </div>
+      )}
+
+      {shouldShowCustomGoalsSummary && (
+        <button
+          className="custom-goals-summary-card"
+          type="button"
+          onClick={() => setIsCustomGoalsModalOpen(true)}
+        >
+          <span className="custom-goals-summary-icon">
+            <ListChecks size={18} strokeWidth={2.4} />
+          </span>
+
+          <span>
+            <strong>Custom goals</strong>
+            <small>
+              {customGoals.length} goals · {completedCustomGoalsCount} completed
+            </small>
+          </span>
+        </button>
+      )}
+
+      {isEditTargetsModalOpen && (
         <div
           className="entry-modal-backdrop"
           onClick={(event) => {
             if (event.target === event.currentTarget) {
-              setIsEditModalOpen(false);
+              setIsEditTargetsModalOpen(false);
             }
           }}
         >
@@ -286,7 +421,7 @@ function MonthlyObjectivesPanel({
               <button
                 className="entry-modal-close"
                 type="button"
-                onClick={() => setIsEditModalOpen(false)}
+                onClick={() => setIsEditTargetsModalOpen(false)}
               >
                 <X size={18} strokeWidth={2.4} />
               </button>
@@ -347,7 +482,7 @@ function MonthlyObjectivesPanel({
                 <button
                   className="entry-cancel-button"
                   type="button"
-                  onClick={() => setIsEditModalOpen(false)}
+                  onClick={() => setIsEditTargetsModalOpen(false)}
                   disabled={isLoading}
                 >
                   Cancel
@@ -362,6 +497,113 @@ function MonthlyObjectivesPanel({
                 </button>
               </div>
             </form>
+          </section>
+        </div>
+      )}
+
+      {isAddGoalModalOpen && (
+        <div
+          className="entry-modal-backdrop"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setIsAddGoalModalOpen(false);
+            }
+          }}
+        >
+          <section
+            className="objectives-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="objectives-modal-header">
+              <div>
+                <h2>Custom goal</h2>
+                <p>
+                  Goals <span>›</span> <strong>Add custom goal</strong>
+                </p>
+              </div>
+
+              <button
+                className="entry-modal-close"
+                type="button"
+                onClick={() => setIsAddGoalModalOpen(false)}
+              >
+                <X size={18} strokeWidth={2.4} />
+              </button>
+            </div>
+
+            <form
+              className="objectives-form"
+              onSubmit={handleSubmitCustomGoal}
+            >
+              <label>
+                Goal title
+                <input
+                  type="text"
+                  value={customGoalTitle}
+                  onChange={(event) => setCustomGoalTitle(event.target.value)}
+                  placeholder="Review RVBB spot"
+                />
+              </label>
+
+              {errorMessage && <p className="objectives-error">{errorMessage}</p>}
+
+              <div className="entry-modal-footer">
+                <button
+                  className="entry-cancel-button"
+                  type="button"
+                  onClick={() => setIsAddGoalModalOpen(false)}
+                  disabled={isLoading}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="entry-save-button"
+                  type="submit"
+                  disabled={isLoading || !customGoalTitle.trim()}
+                >
+                  {isLoading ? 'Saving...' : 'Save goal'}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
+
+      {isCustomGoalsModalOpen && (
+        <div
+          className="entry-modal-backdrop"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setIsCustomGoalsModalOpen(false);
+            }
+          }}
+        >
+          <section
+            className="objectives-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="objectives-modal-header">
+              <div>
+                <h2>Custom goals</h2>
+                <p>
+                  Goals <span>›</span>{' '}
+                  <strong>{completedCustomGoalsCount} completed</strong>
+                </p>
+              </div>
+
+              <button
+                className="entry-modal-close"
+                type="button"
+                onClick={() => setIsCustomGoalsModalOpen(false)}
+              >
+                <X size={18} strokeWidth={2.4} />
+              </button>
+            </div>
+
+            <div className="custom-goals-modal-list">
+              {customGoals.map(renderCustomGoal)}
+            </div>
           </section>
         </div>
       )}
